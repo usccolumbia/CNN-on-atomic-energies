@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 datapath = '/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
 filename = datapath+'/train.csv'
 
-Ntrain=10
+Ntrain=100
 
 # Get all available raw data
 print("*** Loading raw data ***")
@@ -36,5 +36,5 @@ end=time.time()
 print("Time taken to make Coulomb matrices: "+str(end-start)+"\n")##
 
 for i in np.arange(Ntrain):
-    np.savetxt('CM/'+str(i)+'.gz',CM_Train[i,:,:])
+    np.savetxt('CM/'+str(i)+'_new.gz',CM_Train[i,:,:])
 
