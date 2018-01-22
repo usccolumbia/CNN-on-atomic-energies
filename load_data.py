@@ -43,7 +43,7 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
         else:
             print("######### Error: Atom type not found #########")
             
-        
+    xx=1; yy=1; zz=1
     for i in np.arange(N):
         ri = xyz[i]
         for j in np.arange(i,N):
@@ -51,45 +51,33 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
                 CM[i,i]=0.5*Z[i]**2.4
             else:
                 rj = xyz[j]
+                dd=ri-rj
                 
+                if(ri[0]>rj[0]):
+                    xx=-1
+                if(ri[1]>rj[1]):
+                    yy=-1
+                if(ri[2]>rj[2]):
+                    zz=-1
+
+                AA=xx*A
+                BB=yy*B
+                CC=zz*C
+                    
                 d1=LA.norm(ri-rj)
 
-                d2=LA.norm(A+ri-rj)
-                d3=LA.norm(B+ri-rj)
-                d4=LA.norm(C+ri-rj)
-                
-                d5=LA.norm(-A+ri-rj)
-                d6=LA.norm(-B+ri-rj)
-                d7=LA.norm(-C+ri-rj)
-                
-                d8=LA.norm(A+B+ri-rj)
-                d9=LA.norm(A+C+ri-rj)
-                d10=LA.norm(B+C+ri-rj)
-                
-                d11=LA.norm(-A+C+ri-rj)
-                d12=LA.norm(-A+B+ri-rj)
-                d13=LA.norm(-B+C+ri-rj)
+                d2=LA.norm(AA+dd)
+                d3=LA.norm(BB+dd)
+                d4=LA.norm(CC+dd)
 
-                d14=LA.norm(A-B+ri-rj)
-                d15=LA.norm(A-C+ri-rj)
-                d16=LA.norm(B-C+ri-rj)
+                d5=LA.norm(AA+BB+dd)
+                d6=LA.norm(AA+CC+dd)
+                d7=LA.norm(BB+CC+dd)
 
-                d17=LA.norm(-A-B+ri-rj)
-                d18=LA.norm(-A-C+ri-rj)
-                d19=LA.norm(-B-C+ri-rj)
-                
-                d20=LA.norm(A+B+C+ri-rj)
-                d21=LA.norm(-A+B+C+ri-rj)
-                d22=LA.norm(A-B+C+ri-rj)
-                d23=LA.norm(A+B-C+ri-rj)
+                d8=LA.norm(AA+BB+CC+dd)
 
-                d24=LA.norm(-A-B+C+ri-rj)
-                d25=LA.norm(-A+B-C+ri-rj)
-                d26=LA.norm(A-B-C+ri-rj)
-                d27=LA.norm(-A-B-C+ri-rj)
-
-                d=np.amin(np.array((d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27)))
-
+                d=np.amin(np.array((d1,d2,d3,d4,d5,d6,d7,d8)))
+                    
                 CM[i,j]=Z[i]*Z[j]/d
                 CM[j,i]=CM[i,j]
 
