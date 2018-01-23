@@ -21,39 +21,34 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
 
     # mini-batch index
     mb_index = T.lscalar()
-    # Song feature vectors ( mini_batch_size x 264 matrix)
+    # Coulomb matrices ( mini_batch_size x 80 x 80 matrix)
     x = T.matrix('x')
-    # image labels (264 D vector)
+    # Target energies
     y = T.ivector('y')
 
     print('***** Constructing model ***** ')
     
-    # Reshaping matrix of mini_batch_size set of images into a
-    # 4-D tensor of dimensions: mini_batch_size x 3 x 12 x 8
-    # REMEMBER: pad input data to 288-dimensional if 3d input layers used
-    layer0_input = x.reshape((mini_batch_size,1,6,4,12))
+    # Reshaping tensor of mini_batch_size set of images into a
+    # 4-D tensor of dimensions: mini_batch_size x 1 x 80 x 80
+    layer0_input = x.reshape((mini_batch_size,1,80,80))
     
     # First convolution and pooling layer
-    # 4D output tensor is of shape:
-    #     mini_batch_size x 1 x 9 x 8 x 6
-    # OR  mini_batch_size x 9 x 1 x 8 x 6
     [layer0_output, layer0_params] = cnn.convLayer(
         rng_np,
         data_input=layer0_input,
-        image_spec=(mini_batch_size, 1, 6, 4, 12),
-        filter_spec=(num_filters[0], 1, 4, 2, 3),
-        pool_size=(2,1,2),
-        activation=T.tanh,
-        border_mode=(2,0,0) )
-    
+        image_spec=(mini_batch_size, 1, 80, 80),
+        filter_spec=(num_filters[0], 1, 9, 9),
+        pool_size=(2,2),
+        activation=T.tanh)
+
+    # Second convolution and pooling layer
     [layer1_output, layer1_params] = cnn.convLayer(
         rng_np,
         data_input=layer0_output,
-        image_spec=(mini_batch_size, num_filters[0], 4, 3, 5),
-        filter_spec=(num_filters[1],num_filters[0],3,3,3),
-        pool_size=(2,1,3),
-        activation=T.tanh,
-        border_mode=(1,0,0))
+        image_spec=(mini_batch_size, num_filters[0], 36, 36),
+        filter_spec=(num_filters[1],num_filters[0],9,9),
+        pool_size=(2,2),
+        activation=T.tanh)
     
     #[layer2_output, layer2_params] = cnn.convLayer(
     #    rng_np,
@@ -71,24 +66,24 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
 
     # The fully connected layer operates on a matrix of
     # dimensions: mini_batch_size x 1098# It clasifies the values using the softmax function.
-    [p_y_given_x, y_pred, fc_layer_params] = cnn.fullyConnectedLayer(
+    [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=fc_layer_input,
-        num_in=num_filters[1]*2*1*1,
+        num_in=num_filters[1]*14*14,
         num_out=10)
     
     # Cost that is minimised during stochastic descent. Includes regularization
-    cost = cnn.negative_log_lik(y=y, p_y_given_x=p_y_given_x)
-    L2_reg=T.sum(T.sqr(layer0_params[0]))/(num_filters[0]*5*5)
-    L2_reg=L2_reg+T.sum(T.sqr(layer0_params[1]))/(num_filters[0])
-    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[0]))/(num_filters[1]*2*2*10)
-    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[1]))/10
-    L2_reg=L2_reg+T.sum(T.sqr(layer1_params[0]))/(num_filters[1]*num_filters[0]*3*3)
-    L2_reg=L2_reg+T.sum(T.sqr(layer1_params[1]))/num_filters[1]
+    cost = cnn.MSE(y,E_pred)
+#    L2_reg=T.sum(T.sqr(layer0_params[0]))/(num_filters[0]*5*5)
+#    L2_reg=L2_reg+T.sum(T.sqr(layer0_params[1]))/(num_filters[0])
+#    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[0]))/(num_filters[1]*2*2*10)
+#    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[1]))/10
+#    L2_reg=L2_reg+T.sum(T.sqr(layer1_params[0]))/(num_filters[1]*num_filters[0]*3*3)
+#    L2_reg=L2_reg+T.sum(T.sqr(layer1_params[1]))/num_filters[1]
     #L2_reg=L2_reg+T.sum(T.sqr(layer2_params[0]))/(num_filters[1]*num_filters[0]*2*3)
     #L2_reg=L2_reg+T.sum(T.sqr(layer2_params[1])/num_filters[2])
 
-    cost=cost+reg*L2_reg
+#    cost=cost+reg*L2_reg
     
     # Creates a Theano function that computes the mistakes on the validation set.
     # This performs validation.
@@ -103,7 +98,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     # mb_index is the mini_batch_index
     valid_model = theano.function(
         [mb_index],
-        cnn.errors(y, y_pred),
+        cost,
         givens={
             x: valid_set_x[
                 mb_index * mini_batch_size:
@@ -167,7 +162,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             cost_ij = train_model(minibatch_index)
             
             if (iter%100==0):
-                print('Iteration: '+str(iter)+', cost: '+str(cost_ij)+', epoch: '+str(epoch)+', accuracy: '+str(valid_score))
+                print('Iteration: '+str(iter)+', cost: '+str(cost_ij)+', epoch: '+str(epoch)+', valid. cost: '+str(valid_score))
         # Compute the prediction error on each validation mini-batch by
         # calling the previously defined Theano function for validation.
         valid_losses = [valid_model(i) for i in range(n_valid_batches)]
