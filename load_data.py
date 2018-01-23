@@ -28,7 +28,18 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
     A=lat[0]
     B=lat[1]
     C=lat[2]
-
+    Anorm=LA.norm(A)
+    Bnorm=LA.norm(B)
+    Cnorm=LA.norm(C)
+    
+    
+    # Construct coordinates in lattice vector basis
+    xyz_rel=np.zeros((N,3))
+    for i in np.arange(N):
+        xyz_rel[i,0]=np.dot(xyz[i],A)/Anorm
+        xyz_rel[i,1]=np.dot(xyz[i],B)/Bnorm
+        xyz_rel[i,2]=np.dot(xyz[i],C)/Cnorm
+    
     # Atomic charges of our elements
     Z=np.zeros((N,))
     for i in np.arange(N):
@@ -46,18 +57,21 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
     xx=1; yy=1; zz=1
     for i in np.arange(N):
         ri = xyz[i]
+        ri_rel=xyz_rel[i,:]
         for j in np.arange(i,N):
             if(i==j):
                 CM[i,i]=0.5*Z[i]**2.4
             else:
                 rj = xyz[j]
+                rj_rel=xyz_rel[j,:]
+
                 dd=ri-rj
                 
-                if(ri[0]>rj[0]):
+                if(ri_rel[0]>rj_rel[0]):
                     xx=-1
-                if(ri[1]>rj[1]):
+                if(ri_rel[1]>rj_rel[1]):
                     yy=-1
-                if(ri[2]>rj[2]):
+                if(ri_rel[2]>rj_rel[2]):
                     zz=-1
 
                 AA=xx*A
