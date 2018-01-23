@@ -4,7 +4,7 @@ import theano.tensor as T
 import random as rd
 from theano.tensor.signal import pool
 from theano.tensor.nnet import conv2d
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 print('***** Import complete *****')
 
 def gradient_updates_Adam(cost, params, learning_rate):
@@ -51,7 +51,7 @@ def pooling(input_pool, size):
     pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=True)
     return pool_out
 
-def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, border_mode):
+def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     # Function that defines the convolution layer. Calls the
     # activation function and then Pooling function.
     
@@ -89,9 +89,8 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, b
     # dimensions of the output of this operation would be:
     # mini_batch_size x 20 x 80 x 80
     
-    conv_op_out = conv3d(
+    conv_op_out = conv2d(
         input=data_input,
-        border_mode=border_mode,
         filters=W,
         filter_shape=filter_spec,
         input_shape=image_spec)
@@ -171,7 +170,7 @@ def MSE(y, y_pred):
     # Outputs:
     # cost_MSE - the computed mean square error
     
-    cost_MSE = T.mean((y_pred-y)**2)
+    cost_MSE = T.mean((T.transpose(y_pred)-y)**2)
 
     return cost_MSE
 
