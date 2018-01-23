@@ -2,9 +2,10 @@ import numpy as np
 from numpy import linalg as LA
 import theano
 import theano.tensor as T
+import random as rd
 
 def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
-    
+    rd.seed(23455)
     indices = 0
     if (sample_size < 0):
         print('Sample size too small!')
@@ -13,8 +14,8 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
         indices = rd.sample(range(0, data_y.shape[0]), sample_size)
     except ValueError:
         print('Sample size exceeds data size.')
-    x = np.zeros((sample_size,80,80))
-    x = data_x[indices, :,:]
+    x = np.zeros((sample_size,6400))
+    x = data_x[indices, :]
     y = data_y[indices]
     
     shared_x = theano.shared(np.asarray(x,
