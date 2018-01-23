@@ -3,7 +3,7 @@ import theano
 import theano.tensor as T
 import random as rd
 from theano.tensor.signal import pool
-from theano.tensor.nnet import conv3d
+from theano.tensor.nnet import conv2d
 import matplotlib.pyplot as plt
 print('***** Import complete *****')
 
@@ -48,7 +48,7 @@ def pooling(input_pool, size):
     #            dimensions: (# of channels, conv_output_height/#rows,
     #                         conv_output_width/#rows)
     
-    pool_out = pool.pool_3d(input=input_pool, ws=size, ignore_border=False)
+    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=True)
     return pool_out
 
 def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, border_mode):
@@ -73,8 +73,12 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, b
     # Creating a shared variable for weights that are initialised with samples
     # drawn from a gaussian distribution with 0 mean and standard deviation of
     # 0.1. This is just a random initialisation.
-    uniform_lim = lambda n_in,n_out : (-np.sqrt(6.0/(n_in+n_out)), np.sqrt(6.0/(n_in+n_out)))
-    W = theano.shared(rng.uniform(*uniform_lim(filter_spec[0]+filter_spec[2]+filter_spec[3]+filter_spec[4], filter_spec[1]), size=filter_spec), borrow=True)
+    m=image_spec[1]*image_spec[2]*image_spec[3]
+    n=m*filter_spec[0]
+    w_bound=np.sqrt(6./(m+n))
+    W = theano.shared(np.asarray(rng.uniform(low=-w_bound,
+                                             high=w_bound,
+                                             size=filter_spec)), borrow=True)
     # Bias is a 1 D tensor -- one bias per output feature map.
     # Initialised with zeros.
     b = theano.shared(np.zeros((filter_spec[0],)), borrow=True)
@@ -83,7 +87,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, b
     # function. It takes as input the data tensor, filter weights, filter
     # specifications and the image specifications. In our example, the
     # dimensions of the output of this operation would be:
-    # mini_batch_size x 1 x 9 x 24 x 24
+    # mini_batch_size x 20 x 80 x 80
     
     conv_op_out = conv3d(
         input=data_input,
@@ -98,7 +102,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, b
     # In this case our bias tensor is originally of the dimension 9 x 1. The
     # dimshuffle operation used below, broadcasts this into a tensor of
     # 1 x 9 x 1 x 1. Note that there is one bias per output feature map.
-    layer_activation = activation(conv_op_out + b.dimshuffle('x', 0, 'x', 'x', 'x'))
+    layer_activation = activation(conv_op_out + b.dimshuffle('x', 0, 'x', 'x'))
     
     # Perform pooling on the activations. It is required to reduce the spatial
     # size of the representation to reduce the number of parameters and
@@ -134,9 +138,12 @@ def fullyConnectedLayer(rng,data_input, num_in, num_out):
     # Creating a shared variable for weights that are initialised with samples
     # drawn from a gaussian distribution with 0 mean and standard deviation of
     # 0.1. This is just a random initialisation.
-    uniform_lim = lambda n_in,n_out : (-np.sqrt(6.0/(n_in+n_out)), np.sqrt(6.0/(n_in+n_out)))
+    w_bound=np.sqrt(6./(num_in+num_out))
     W = theano.shared(
-        value=rng.uniform(*uniform_lim(num_in, num_out), size=(num_in,num_out)),
+        value=np.asarray(
+            rng.uniform(low=-w_bound,
+                        high=w_bound,
+                        size=(num_in,num_out))),
         name='W',
         borrow=True)
     
@@ -147,16 +154,12 @@ def fullyConnectedLayer(rng,data_input, num_in, num_out):
         name='b',
         borrow=True)
     
-    # Compute class-membership probabilities using the Softmax activation
-    # function.
-    p_y_given_x = T.nnet.softmax(T.dot(data_input, W) + b)
-    
-    # Class prediction. Find class whose probability is maximal.
-    y_pred = T.argmax(p_y_given_x, axis=1)
-    
+    # Compute predicted energies
+    E_pred = T.nnet.sigmoid(T.dot(data_input, W) + b)
+        
     # Combine weights and biases into a single list.
     params = [W, b]
-    return p_y_given_x, y_pred, params
+    return E_pred, params
 
 def negative_log_lik(y, p_y_given_x):
     # Function to compute the cost that is to be minimised.
@@ -186,22 +189,6 @@ def negative_log_lik(y, p_y_given_x):
     cost_log=T.nnet.categorical_crossentropy(p_y_given_x,y-1).mean()
     return cost_log
 
-def errors(y, y_pred):
-    # Function to compute the fraction of wrongly classified
-    # instances.
-    
-    # Inputs:
-    # y - expected class label
-    # y_pred - predicted class label
-    
-    # Outputs:
-    # count_error - number of wrongly classified instances
-    
-    # Counting the number of number of wrong predictions. T.neq
-    # function returns 1 if the variables compared are not equal.
-    # The mean would return the fraction of mismatches.
-    count_error = T.mean(T.neq(y_pred, y-1))
-    return count_error
 
 
 
