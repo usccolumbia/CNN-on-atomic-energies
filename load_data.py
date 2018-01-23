@@ -1,7 +1,30 @@
 import numpy as np
 from numpy import linalg as LA
+import theano
+import theano.tensor as T
 
-datapath='/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
+def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
+    
+    indices = 0
+    if (sample_size < 0):
+        print('Sample size too small!')
+        return
+    try:
+        indices = rd.sample(range(0, data_y.shape[0]), sample_size)
+    except ValueError:
+        print('Sample size exceeds data size.')
+    x = np.zeros((sample_size,80,80))
+    x = data_x[indices, :,:]
+    y = data_y[indices]
+    
+    shared_x = theano.shared(np.asarray(x,
+                                        dtype=theano.config.floatX),
+                             borrow=borrow)
+    shared_y = theano.shared(np.asarray(y,
+                                        dtype=theano.config.floatX),
+                             borrow=borrow)
+    return shared_x, T.cast(shared_y, 'int32'), (x, y)
+
 
 def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
     '''
