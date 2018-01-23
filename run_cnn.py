@@ -13,9 +13,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0]
     n_train_batches //= mini_batch_size
     n_valid_batches //= mini_batch_size
-    n_test_batches =  test_set_x.get_value(borrow=True).shape[0]
-    n_test_batches //= mini_batch_size
-    
+        
     print('train: %d batches, validation: %d batches'
           % (n_train_batches, n_valid_batches))
 
@@ -34,7 +32,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     
     # First convolution and pooling layer
     [layer0_output, layer0_params] = cnn.convLayer(
-        rng_np,
+        rng,
         data_input=layer0_input,
         image_spec=(mini_batch_size, 1, 80, 80),
         filter_spec=(num_filters[0], 1, 9, 9),
@@ -43,7 +41,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
 
     # Second convolution and pooling layer
     [layer1_output, layer1_params] = cnn.convLayer(
-        rng_np,
+        rng,
         data_input=layer0_output,
         image_spec=(mini_batch_size, num_filters[0], 36, 36),
         filter_spec=(num_filters[1],num_filters[0],9,9),
@@ -69,8 +67,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=fc_layer_input,
-        num_in=num_filters[1]*14*14,
-        num_out=10)
+        num_in=num_filters[1]*14*14)
     
     # Cost that is minimised during stochastic descent. Includes regularization
     cost = cnn.MSE(y,E_pred)

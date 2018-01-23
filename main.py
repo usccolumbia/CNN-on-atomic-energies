@@ -66,4 +66,5 @@ train_set_x, train_set_y, train_set = load_data.shared_dataset(
     sample_size=Ntrain)
 ###############################################################
 
-run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,alpha,Nepoch,nf,mbs,reg)
+
+run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,alpha,Nepoch,Nf,mbs,reg)
