@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 datapath = '/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
 filename = datapath+'/train.csv'
 ############################## 
-Ntrain=100
 
 #######  Get all available raw data ###### 
+Ntrain=2400
+
 print("*** Loading raw data ***")
 start=time.time()
 spacegrp,Natoms,pc_al,pc_ga,pc_in,lv_alpha,lv_beta,lv_gamma,lvadeg,lvbdeg,lvgdeg,Ef,Eg = load_data.get_train_data(filename)
@@ -41,18 +42,3 @@ print("Time taken to load geometry data: "+str(end-start)+"\n")
 #for i in np.arange(Ntrain):
 #    np.savetxt('CM/'+str(i)+'.gz',CM_Train[i,:,:])
 
-testind=90
-a=np.loadtxt("CM/"+str(testind)+".gz")
-b=np.loadtxt("CM/"+str(testind)+"_new.gz")
-count=0
-pp=0
-
-for i in np.arange(int(Natoms[testind])):
-    for j in np.arange(i,int(Natoms[testind])):
-        pp=pp+1
-        if(np.abs(a[i,j]-b[i,j])>1):
-            print("*** MOTHERFUCKER!!! ***")
-            print('a: '+str(a[i,j])+', b: '+str(b[i,j]))
-            count=count+1
-print(pp)
-print(count)

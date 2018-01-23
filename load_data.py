@@ -3,7 +3,7 @@ from numpy import linalg as LA
 
 datapath='/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
 
-def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
+def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
     '''
     Constructs a Coulomb matrix for a provided system.
 
@@ -28,7 +28,18 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
     A=lat[0]
     B=lat[1]
     C=lat[2]
-
+    Anorm=LA.norm(A)
+    Bnorm=LA.norm(B)
+    Cnorm=LA.norm(C)
+    
+    
+    # Construct coordinates in lattice vector basis
+    xyz_rel=np.zeros((N,3))
+    for i in np.arange(N):
+        xyz_rel[i,0]=np.dot(xyz[i],A)/Anorm
+        xyz_rel[i,1]=np.dot(xyz[i],B)/Bnorm
+        xyz_rel[i,2]=np.dot(xyz[i],C)/Cnorm
+    
     # Atomic charges of our elements
     Z=np.zeros((N,))
     for i in np.arange(N):
@@ -43,55 +54,47 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
         else:
             print("######### Error: Atom type not found #########")
             
-        
+
     for i in np.arange(N):
         ri = xyz[i]
+        ri_rel=xyz_rel[i,:]
         for j in np.arange(i,N):
             if(i==j):
                 CM[i,i]=0.5*Z[i]**2.4
             else:
                 rj = xyz[j]
+                rj_rel=xyz_rel[j,:]
 
+                xx=1; yy=1; zz=1 # Assumption at first: i:th atom closer to origin
+                
                 dd=ri-rj
                 
-                d1=LA.norm(dd)
+                if(ri_rel[0]>rj_rel[0]):
+                    xx=-1
+                if(ri_rel[1]>rj_rel[1]):
+                    yy=-1
+                if(ri_rel[2]>rj_rel[2]):
+                    zz=-1
 
-                d2=LA.norm(A+dd)
-                d3=LA.norm(B+dd)
-                d4=LA.norm(C+dd)
-                
-                d5=LA.norm(-A+dd)
-                d6=LA.norm(-B+dd)
-                d7=LA.norm(-C+dd)
-                
-                d8=LA.norm(A+B+dd)
-                d9=LA.norm(A+C+dd)
-                d10=LA.norm(B+C+dd)
-                
-                d11=LA.norm(-A+C+dd)
-                d12=LA.norm(-A+B+dd)
-                d13=LA.norm(-B+C+dd)
+                AA=xx*A
+                BB=yy*B
+                CC=zz*C
+                    
+                d1=LA.norm(ri-rj)
 
-                d14=LA.norm(A-B+dd)
-                d15=LA.norm(A-C+dd)
-                d16=LA.norm(B-C+dd)
+                d2=LA.norm(AA+dd)
+                d3=LA.norm(BB+dd)
+                d4=LA.norm(CC+dd)
 
-                d17=LA.norm(-A-B+dd)
-                d18=LA.norm(-A-C+dd)
-                d19=LA.norm(-B-C+dd)
-                
-                d20=LA.norm(A+B+C+dd)
-                d21=LA.norm(-A+B+C+dd)
-                d22=LA.norm(A-B+C+dd)
-                d23=LA.norm(A+B-C+dd)
+                d5=LA.norm(AA+BB+dd)
+                d6=LA.norm(AA+CC+dd)
+                d7=LA.norm(BB+CC+dd)
 
-                d24=LA.norm(-A-B+C+dd)
-                d25=LA.norm(-A+B-C+dd)
-                d26=LA.norm(A-B-C+dd)
-                d27=LA.norm(-A-B-C+dd)
 
-                d=np.amin(np.array((d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27)))
+                d8=LA.norm(AA+BB+CC+dd)
 
+                d=np.amin(np.array((d1,d2,d3,d4,d5,d6,d7,d8)))
+                    
                 CM[i,j]=Z[i]*Z[j]/d
                 CM[j,i]=CM[i,j]
 
