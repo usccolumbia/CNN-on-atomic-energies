@@ -11,11 +11,11 @@ Ndata=2400
 Ntrain=2000
 Nval=Ndata-Ntrain
 
-alpha  = 0.001   # Adam Learning rate
-Nepoch = 20      # Number of epochs
-Nf     = [20,20] # Number of filters in each convlayer
-mbs    = 50      # minibatch size
-reg    = 0.0001  # Regularization parameter
+alpha  = 0.0001   # Adam Learning rate
+Nepoch = 3      # Number of epochs
+Nf     = [9,18] # Number of filters in each convlayer
+mbs    = 10      # minibatch size
+reg    = 0.001  # Regularization parameter
 
 ###### Location of data ######
 datapath = '/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'

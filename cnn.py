@@ -170,7 +170,7 @@ def MSE(y, y_pred):
     # Outputs:
     # cost_MSE - the computed mean square error
     
-    cost_MSE = T.mean((T.transpose(y_pred)-y)**2)
+    cost_MSE = T.sum((T.transpose(y_pred)-y)**2)
 
     return cost_MSE
 
