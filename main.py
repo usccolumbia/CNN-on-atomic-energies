@@ -1,4 +1,4 @@
- import numpy as np
+import numpy as np
 import load_data
 import plotting
 import time
@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 datapath = '/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
 filename = datapath+'/train.csv'
 ############################## 
-Ntrain=10
+Ntrain=100
 
 #######  Get all available raw data ###### 
 print("*** Loading raw data ***")
