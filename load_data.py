@@ -3,7 +3,7 @@ from numpy import linalg as LA
 
 datapath='/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
 
-def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
+def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
     '''
     Constructs a Coulomb matrix for a provided system.
 
