@@ -116,7 +116,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation, b
     params = [W, b]
     return output, params
 
-def fullyConnectedLayer(rng,data_input, num_in, num_out):
+def fullyConnectedLayer(rng,data_input, num_in):
     # Function to create the fully-connected layer and makes use of the
     # output from the previous layer. It is the final layer in the
     # convolutional neural network architecture and comprises of the
@@ -128,8 +128,7 @@ def fullyConnectedLayer(rng,data_input, num_in, num_out):
     #              (mini_batch_size, # channels * 12 * 12)
     # num_in - number of input units. Dimensions would be:
     #           (# channels * 12 * 12)
-    # num_out - number of output units or number of output labels.
-    
+        
     # Outputs:
     # p_y_given_x - class-membership probabilities.
     # y_pred - class with maximal probability
@@ -138,19 +137,19 @@ def fullyConnectedLayer(rng,data_input, num_in, num_out):
     # Creating a shared variable for weights that are initialised with samples
     # drawn from a gaussian distribution with 0 mean and standard deviation of
     # 0.1. This is just a random initialisation.
-    w_bound=np.sqrt(6./(num_in+num_out))
+    w_bound=np.sqrt(6./(num_in+1))
     W = theano.shared(
         value=np.asarray(
             rng.uniform(low=-w_bound,
                         high=w_bound,
-                        size=(num_in,num_out))),
+                        size=(num_in,1))),
         name='W',
         borrow=True)
     
     # Creating a shared variable for biases that are initialised with
     # zeros.
     b = theano.shared(
-        value=np.zeros((num_out,)),
+        value=np.zeros((1,)),
         name='b',
         borrow=True)
     
@@ -161,33 +160,20 @@ def fullyConnectedLayer(rng,data_input, num_in, num_out):
     params = [W, b]
     return E_pred, params
 
-def negative_log_lik(y, p_y_given_x):
+def MSE(y, y_pred):
     # Function to compute the cost that is to be minimised.
     # Here, we compute the negative log-likelihood.
 
     # Inputs:
-    # y - expected class label
-    # p_y_given_x - class-membership probabilities
+    # y - expected energy
+    # y_pred calculated energy
     
     # Outputs:
-    # cost_log - the computed negative log-lik cost
+    # cost_MSE - the computed mean square error
     
-    # Generate the relevant row indices
-    #rows = T.arange(y.shape[0])
-    
-    # Generate the relevant column indices
-    #cols = y;
-    
-    # Computing the log probabilities
-    #log_prob = T.log(p_y_given_x)
-    
-    # Obtain the mean of the relevant entries. Loss is formally
-    # defined over the sum of the individual error terms as in
-    # the equation above. However, we use mean instead to speed
-    # up convergence.
-    #cost_log = -T.mean(log_prob[rows, cols])
-    cost_log=T.nnet.categorical_crossentropy(p_y_given_x,y-1).mean()
-    return cost_log
+    cost_MSE = T.mean((y_pred-y)**2)
+
+    return cost_MSE
 
 
 
