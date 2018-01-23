@@ -54,7 +54,7 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
         else:
             print("######### Error: Atom type not found #########")
             
-    xx=1; yy=1; zz=1
+
     for i in np.arange(N):
         ri = xyz[i]
         ri_rel=xyz_rel[i,:]
@@ -65,6 +65,8 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
                 rj = xyz[j]
                 rj_rel=xyz_rel[j,:]
 
+                xx=1; yy=1; zz=1 # Assumption at first: i:th atom closer to origin
+                
                 dd=ri-rj
                 
                 if(ri_rel[0]>rj_rel[0]):
