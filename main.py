@@ -27,18 +27,15 @@ end=time.time()
 print("Time taken to load geometry data: "+str(end-start)+"\n")
 ################################
 
-#plotting.EnergyHist(Natoms,'blue','Histogram of atom numbers','Number of atoms in unit cell')
 
-###### Make Coulomb matrices ###### 
-#print("*** Making Coulomb matrices ***")
-#start=time.time()
-#CM_Train = np.zeros((Ntrain,80,80))
-#for i in np.arange(Ntrain):
-#    CM_Train[i,:,:]=load_data.make_correlation_matrix(xyz_Train[i],lattices_Train[i],elements_Train[i])
-#end=time.time()
-#print("Time taken to make Coulomb matrices: "+str(end-start)+"\n")##
-####################################
-
-#for i in np.arange(Ntrain):
-#    np.savetxt('CM/'+str(i)+'.gz',CM_Train[i,:,:])
+###### Get all the relevant data for training ######
+print('*** Loading datapoints ***')
+Xtrain=np.zeros((Ntrain,80,80))
+Ytrain=np.zeros((Ntrain,))
+for i in np.arange(Ntrain):
+    Xtrain[i,:,:]=np.loadtxt('CM/'+str(i+1)+'.gz')
+    Ytrain[i]=Ef[i]
+timing=time.time()
+print('Time taken to load data: '+str(timing-end))
+####################################################
 
