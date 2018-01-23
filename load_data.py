@@ -51,42 +51,44 @@ def make_correlation_matrix(xyz,lat,elm,rndnoise=False):
                 CM[i,i]=0.5*Z[i]**2.4
             else:
                 rj = xyz[j]
-                
-                d1=LA.norm(ri-rj)
 
-                d2=LA.norm(A+ri-rj)
-                d3=LA.norm(B+ri-rj)
-                d4=LA.norm(C+ri-rj)
+                dd=ri-rj
                 
-                d5=LA.norm(-A+ri-rj)
-                d6=LA.norm(-B+ri-rj)
-                d7=LA.norm(-C+ri-rj)
-                
-                d8=LA.norm(A+B+ri-rj)
-                d9=LA.norm(A+C+ri-rj)
-                d10=LA.norm(B+C+ri-rj)
-                
-                d11=LA.norm(-A+C+ri-rj)
-                d12=LA.norm(-A+B+ri-rj)
-                d13=LA.norm(-B+C+ri-rj)
+                d1=LA.norm(dd)
 
-                d14=LA.norm(A-B+ri-rj)
-                d15=LA.norm(A-C+ri-rj)
-                d16=LA.norm(B-C+ri-rj)
-
-                d17=LA.norm(-A-B+ri-rj)
-                d18=LA.norm(-A-C+ri-rj)
-                d19=LA.norm(-B-C+ri-rj)
+                d2=LA.norm(A+dd)
+                d3=LA.norm(B+dd)
+                d4=LA.norm(C+dd)
                 
-                d20=LA.norm(A+B+C+ri-rj)
-                d21=LA.norm(-A+B+C+ri-rj)
-                d22=LA.norm(A-B+C+ri-rj)
-                d23=LA.norm(A+B-C+ri-rj)
+                d5=LA.norm(-A+dd)
+                d6=LA.norm(-B+dd)
+                d7=LA.norm(-C+dd)
+                
+                d8=LA.norm(A+B+dd)
+                d9=LA.norm(A+C+dd)
+                d10=LA.norm(B+C+dd)
+                
+                d11=LA.norm(-A+C+dd)
+                d12=LA.norm(-A+B+dd)
+                d13=LA.norm(-B+C+dd)
 
-                d24=LA.norm(-A-B+C+ri-rj)
-                d25=LA.norm(-A+B-C+ri-rj)
-                d26=LA.norm(A-B-C+ri-rj)
-                d27=LA.norm(-A-B-C+ri-rj)
+                d14=LA.norm(A-B+dd)
+                d15=LA.norm(A-C+dd)
+                d16=LA.norm(B-C+dd)
+
+                d17=LA.norm(-A-B+dd)
+                d18=LA.norm(-A-C+dd)
+                d19=LA.norm(-B-C+dd)
+                
+                d20=LA.norm(A+B+C+dd)
+                d21=LA.norm(-A+B+C+dd)
+                d22=LA.norm(A-B+C+dd)
+                d23=LA.norm(A+B-C+dd)
+
+                d24=LA.norm(-A-B+C+dd)
+                d25=LA.norm(-A+B-C+dd)
+                d26=LA.norm(A-B-C+dd)
+                d27=LA.norm(-A-B-C+dd)
 
                 d=np.amin(np.array((d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27)))
 
