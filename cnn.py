@@ -159,18 +159,18 @@ def fullyConnectedLayer(rng,data_input, num_in):
     params = [W, b]
     return E_pred, params
 
-def MSE(y, y_pred):
+def RMSLE(y, y_pred,msb):
     # Function to compute the cost that is to be minimised.
-    # Here, we compute the negative log-likelihood.
 
     # Inputs:
-    # y - expected energy
-    # y_pred calculated energy
+    # y      : expected energy
+    # y_pred : calculated energy
+    # msb    : minibatch size
     
     # Outputs:
-    # cost_MSE - the computed mean square error
+    # cost_RMSLE - the computed mean square logarithmic error
     
-    cost_MSE = T.sum((T.transpose(y_pred)-y)**2)
+    cost_RMSLE = T.sqrt(1/msb*T.sum((T.log(T.transpose(y_pred)+1)-T.log(y+1))**2))
 
     return cost_MSE
 
