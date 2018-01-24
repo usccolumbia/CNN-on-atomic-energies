@@ -13,8 +13,8 @@ Nval=Ndata-Ntrain
 
 alpha  = 0.0001   # Adam Learning rate
 Nepoch = 3      # Number of epochs
-Nf     = [9,18] # Number of filters in each convlayer
-mbs    = 10      # minibatch size
+Nf     = [10,10,10] # Number of filters in each convlayer
+mbs    = 50      # minibatch size
 reg    = 0.001  # Regularization parameter
 
 ###### Location of data ######
@@ -42,17 +42,17 @@ print("Time taken to load geometry data: "+str(end-start)+"\n")
 ###### Get all the relevant data for training ######
 print('*** Loading datapoints ***')
 Xtrain=np.zeros((Ntrain,6400))
-Ytrain=np.zeros((Ntrain,))
+Ytrain=np.zeros((Ntrain,1))
 for i in np.arange(Ntrain):
     X=np.loadtxt('CM/'+str(i+1)+'.gz')
     Xtrain[i,:]=X.flatten(0)
-    Ytrain[i]=Ef[i]
+    Ytrain[i,0]=Ef[i]
 Xval=np.zeros((Nval,6400))
-Yval=np.zeros((Nval,))
+Yval=np.zeros((Nval,1))
 for i in np.arange(Nval):
     X=np.loadtxt('CM/'+str(Ntrain+i+1)+'.gz')
     Xval[i,:]=X.flatten(0)
-    Yval[i]=Ef[i]
+    Yval[i,0]=Ef[i]
 timing=time.time()
 print('Time taken to load data: '+str(timing-end))
 ####################################################

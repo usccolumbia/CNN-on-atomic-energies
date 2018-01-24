@@ -16,7 +16,8 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
         print('Sample size exceeds data size.')
     x = np.zeros((sample_size,6400))
     x = data_x[indices, :]
-    y = data_y[indices]
+    y = np.zeros((sample_size,1))
+    y = data_y[indices,:]
     
     shared_x = theano.shared(np.asarray(x,
                                         dtype=theano.config.floatX),
@@ -24,7 +25,7 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
     shared_y = theano.shared(np.asarray(y,
                                         dtype=theano.config.floatX),
                              borrow=borrow)
-    return shared_x, T.cast(shared_y, 'int32'), (x, y)
+    return shared_x, shared_y, (x, y)
 
 
 def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
