@@ -22,8 +22,8 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     mb_index = T.lscalar()
     # Coulomb matrices ( mini_batch_size x 80 x 80 matrix)
     x = T.matrix('x')
-    # Target energies
-    y = T.ivector('y')
+    # Target energies (1 x mini_batch_size)
+    y = T.matrix('y')
 
     print('***** Constructing model ***** ')
     
@@ -36,42 +36,41 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
         rng,
         data_input=layer0_input,
         image_spec=(mini_batch_size, 1, 80, 80),
-        filter_spec=(num_filters[0], 1, 9, 9),
-        pool_size=(2,2),
+        filter_spec=(num_filters[0], 1, 21, 21),
+        pool_size=(3,3),
         activation=T.tanh)
 
     # Second convolution and pooling layer
     [layer1_output, layer1_params] = cnn.convLayer(
         rng,
         data_input=layer0_output,
-        image_spec=(mini_batch_size, num_filters[0], 36, 36),
-        filter_spec=(num_filters[1],num_filters[0],9,9),
+        image_spec=(mini_batch_size, num_filters[0], 20, 20),
+        filter_spec=(num_filters[1],num_filters[0],5,5),
         pool_size=(2,2),
         activation=T.tanh)
     
-    #[layer2_output, layer2_params] = cnn.convLayer(
-    #    rng_np,
-    #    data_input=layer1_output,
-    #    image_spec=(mini_batch_size, num_filters[1], 1, 3, 6),
-    #    filter_spec=(num_filters[2], num_filters[1], 1, 2, 3),
-    #    pool_size=( 1, 1,2),
-    #    activation=T.tanh,
-    #    border_mode='valid')
+    [layer2_output, layer2_params] = cnn.convLayer(
+        rng,
+        data_input=layer1_output,
+        image_spec=(mini_batch_size, num_filters[1], 8, 8),
+        filter_spec=(num_filters[2], num_filters[1], 3, 3),
+        pool_size=( 2,2),
+        activation=T.tanh)
 
 
     # Flatten the output into dimensions:
     # mini_batch_size x 432
-    fc_layer_input = layer1_output.flatten(2)
+    fc_layer_input = layer2_output.flatten(2)
 
     # The fully connected layer operates on a matrix of
     # dimensions: mini_batch_size x 1098# It clasifies the values using the softmax function.
     [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=fc_layer_input,
-        num_in=num_filters[1]*14*14)
+        num_in=num_filters[2]*3*3)
     
     # Cost that is minimised during stochastic descent. Includes regularization
-    cost = cnn.MSE(y,E_pred)
+    cost = cnn.RMSLE(y,E_pred)
 #    L2_reg=T.sum(T.sqr(layer0_params[0]))/(num_filters[0]*5*5)
 #    L2_reg=L2_reg+T.sum(T.sqr(layer0_params[1]))/(num_filters[0])
 #    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[0]))/(num_filters[1]*2*2*10)
@@ -117,7 +116,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     
 
     # List of parameters to be fit during training
-    params = fc_layer_params + layer0_params + layer1_params #+ layer2_params
+    params = fc_layer_params + layer0_params + layer1_params + layer2_params
     
     # Creates a function that updates the model parameters by SGD.
     # The updates list is created by looping over all
@@ -139,38 +138,6 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
                 (mb_index + 1) * mini_batch_size
             ]})
 
-    def update_weight(weights, ax_wt, fig_wt, epoch):
-        # global normalise
-        weights = np.array(weights[:,0])
-        min_channel = np.min(weights)
-        max_channel = np.max(weights)
-        a = 255/(max_channel - min_channel)
-        b = 255 - a * max_channel
-        weights = a * weights + b
-        for i in range(3):
-            for j in range(3):
-                idx = 3 * i + j;
-                channel = weights[idx]
-                ax_wt[i, j].set_xticklabels([])
-                ax_wt[i, j].set_yticklabels([])
-                ax_wt[i, j].set_xticks([])
-                ax_wt[i, j].set_yticks([])
-                im = ax_wt[i, j].imshow(channel,
-                                        cmap='gray',
-                                        interpolation='None')
-        fig_wt.suptitle(
-            'Visualisation of Filters After %d Epoch(s)' %epoch, y=1)
-        fig_wt.subplots_adjust(right=0.8)
-        cbar_ax = fig_wt.add_axes([0.85, 0.15, 0.05, 0.7])
-        ch_max = int(np.max(channel))
-        ch_min = int(np.min(channel))
-        ch_mid = int(ch_min + (ch_max - ch_min)/2)
-        cbar = fig_wt.colorbar(im, cax=cbar_ax, ticks=[ch_min+2, ch_mid, ch_max-2])
-        cbar.ax.set_yticklabels(["{:.3f}".format(min_channel),
-                                 "{:.3f}".format(min_channel+
-                                                 (max_channel-min_channel)/2),
-                                 "{:.3f}".format(max_channel)])
-        fig_wt.canvas.draw()
         
     def update_line(line1, fig, x, y):
         line1.set_xdata(np.append(line1.get_xdata(), x))
@@ -205,22 +172,15 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     ax2.set_ylabel('Prediction error')
     ax2.set_title('Training error')
     ax2.set_xlim(0, num_epochs * n_train_batches)
-    ax2.set_ylim(0, 0.1)
+    ax2.set_ylim(0, 0.3)
     plt.tight_layout()
     fig.show()
 
-    fig_wt, ax_wt = plt.subplots(3, 3, sharex='col', sharey='row',
-                                 gridspec_kw=dict(wspace=0.02,
-                                                  hspace=0.02,
-                                                  top=0.95,
-                                                  bottom=0.05,
-                                                  left=0.17,
-                                                  right=0.845))
 
-    fig_wt.show()
+
     plots_conv = layer0_params[0].get_value()
     #plots_fc = fc_layer_params[0].get_value()
-    update_weight(plots_conv, ax_wt, fig_wt, epoch)
+    #update_weight(plots_conv, ax_wt, fig_wt, epoch)
     plots_conv = np.array(plots_conv[:, 0])
     #biases_fc = fc_layer_params[1].get_value()
 
@@ -253,7 +213,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             # Obtain the cost of each minibatch specified using the
             # minibatch_index.
             cost_ij = train_model(minibatch_index)
-
+            
             # Update the visualisation.
             update_cost_plot(line2, fig, iter, cost_ij)
 
@@ -262,7 +222,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             valid_score = np.mean(valid_losses)
             # Update the visualisation.
             update_line(line1, fig, iter, valid_score)
-                                            
+            print(valid_score)                                
             
             # Obtain the weights for visualisation
             plots_conv = layer0_params[0].get_value()
@@ -286,12 +246,6 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
              #   [np.transpose(biases_fc[0:5])],
              #   axis = 0)
             
-        # Obtain the weights of the first convolutional layer.
-        conv_weights = layer0_params[0].get_value()
-        
-        # Update the visualisation
-        update_weight(conv_weights, ax_wt, fig_wt, epoch)
-        
         #if (iter%100==0):
         #    print('Iteration: '+str(iter)+', cost: '+str(cost_ij)+', epoch: '+str(epoch)+', valid. cost: '+str(valid_score))
                           
@@ -305,8 +259,8 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     #for i in range(Xtest.shape[0]):
     #    file.write(str(i)+str(predictions[i]))
     plt.ioff()
-    fig_tr, axarr = plt.subplots(9,figsize=(8, 10), sharex=True)
-    for ch_count in range(9):
+    fig_tr, axarr = plt.subplots(5,figsize=(8, 10), sharex=True)
+    for ch_count in range(5):
         l1 = axarr[ch_count].plot(plot_arr1[:, ch_count])
         l2 = axarr[ch_count].plot(plot_arr2[:, ch_count])
         l3 = axarr[ch_count].plot(plot_arr3[:, ch_count])
@@ -318,8 +272,8 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
         
     fig_tr.subplots_adjust(hspace=0.1)
     
-    fig_bias, axarr_bias = plt.subplots(9,figsize=(8, 10), sharex=True)
-    for ch_count in range(9):
+    fig_bias, axarr_bias = plt.subplots(5,figsize=(8, 10), sharex=True)
+    for ch_count in range(5):
         axarr_bias[ch_count].plot(plot_biases_arr[:, ch_count], 'm-')
         axarr_bias[ch_count].yaxis.set_label_position("right")
         axarr_bias[ch_count].set_ylabel('Channel '+str(ch_count+1))
