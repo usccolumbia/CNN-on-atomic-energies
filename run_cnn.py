@@ -139,67 +139,16 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             ]})
 
         
-    def update_line(line1, fig, x, y):
-        line1.set_xdata(np.append(line1.get_xdata(), x))
-        line1.set_ydata(np.append(line1.get_ydata(), y))
-        fig.canvas.draw()
-        
-    def update_cost_plot(line2, fig, x, y):
-        line2.set_xdata(np.append(line2.get_xdata(), x))
-        line2.set_ydata(np.append(line2.get_ydata(), y))
-        fig.canvas.draw() 
-    
     iter = 0
     epoch = 0
     cost_ij = 0
     valid_losses = [valid_model(i) for i in range(n_valid_batches)]
     valid_score = np.mean(valid_losses)
 
-    plt.ion()
-    fig = plt.figure(figsize=(8, 6))
 
-    ax = fig.add_subplot(211)
-    line1, = ax.plot(iter, cost_ij, 'b-')
-    ax.set_xlim(0, num_epochs * n_train_batches)
-    ax.set_ylim(0, 0.3)
-    ax.set_xlabel('Iterations')
-    ax.set_ylabel('Prediction Error')
-    ax.set_title('Validation error')
-    
-    ax2 = fig.add_subplot(212)
-    line2, = ax2.plot(iter, cost_ij, 'r-')
-    ax2.set_xlabel('Iterations')
-    ax2.set_ylabel('Prediction error')
-    ax2.set_title('Training error')
-    ax2.set_xlim(0, num_epochs * n_train_batches)
-    ax2.set_ylim(0, 0.3)
-    plt.tight_layout()
-    fig.show()
+    train_error = []
+    valid_error= []
 
-
-
-    plots_conv = layer0_params[0].get_value()
-    #plots_fc = fc_layer_params[0].get_value()
-    #update_weight(plots_conv, ax_wt, fig_wt, epoch)
-    plots_conv = np.array(plots_conv[:, 0])
-    #biases_fc = fc_layer_params[1].get_value()
-
-    # Create buffer arrays for the channel and fully connected
-    # layer weights. These are for visualisation only and are
-    # chosen arbitrarily!
-    plot_arr1 = np.array([plots_conv[:, 1, 1]]);
-    plot_arr2 = np.array([plots_conv[:, 2, 2]]);
-    plot_arr3 = np.array([plots_conv[:, 3, 3]])
-    #plot_fc1 = np.array([plots_fc[1, 1]])
-    #plot_fc2 = np.array([plots_fc[2, 2]])
-    #plot_fc3 = np.array([plots_fc[3, 3]])
-
-    # Create a buffer array for the biases. These are for
-    # visualisation only!
-    plot_biases_arr = np.array([np.transpose(layer0_params[1].get_value())])
-    #plot_biases_fc_arr = np.array([np.transpose(biases_fc[0:5])])
-    
-    
     # This is where we call the previously defined Theano functions.
     print('***** Training model *****')
     while (epoch < num_epochs):
@@ -213,17 +162,14 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             # Obtain the cost of each minibatch specified using the
             # minibatch_index.
             cost_ij = train_model(minibatch_index)
+            # Save training error
+            train_error.append(float(cost_ij))
             
-            # Update the visualisation.
-            update_cost_plot(line2, fig, iter, cost_ij)
-
             valid_losses = [valid_model(i) for i in range(n_valid_batches)]
             # Compute the mean prediction error across all the mini-batches.
             valid_score = np.mean(valid_losses)
-            # Update the visualisation.
-            update_line(line1, fig, iter, valid_score)
-            print(valid_score)                                
-            
+            # Save validation error
+            valid_error.append(valid_score)
             # Obtain the weights for visualisation
             plots_conv = layer0_params[0].get_value()
      #       plots_fc_wt = fc_layer_params[0].get_value()
@@ -281,3 +227,12 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     axarr_bias[8].set_xlabel('Iterations')
     fig_bias.subplots_adjust(hspace=0.1)
     plt.show()
+
+    # Return values:
+    # * train_error <list of floats>
+    # * valid_error <list of floats>
+    # * w1          <np.array>
+    # * w2
+    # * w3
+    # * wfc
+    return train_error, valid_error
