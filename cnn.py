@@ -48,7 +48,7 @@ def pooling(input_pool, size):
     #            dimensions: (# of channels, conv_output_height/#rows,
     #                         conv_output_width/#rows)
     
-    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=True)
+    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=False,mode='max')
     return pool_out
 
 def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
@@ -153,13 +153,13 @@ def fullyConnectedLayer(rng,data_input, num_in):
         borrow=True)
     
     # Compute predicted energies
-    E_pred = T.nnet.sigmoid(T.dot(data_input, W) + b)
+    E_pred = T.nnet.relu(T.dot(data_input, W) + b)
         
     # Combine weights and biases into a single list.
     params = [W, b]
     return E_pred, params
 
-def RMSLE(y, y_pred,msb):
+def RMSLE(y, y_pred):
     # Function to compute the cost that is to be minimised.
 
     # Inputs:
@@ -169,10 +169,12 @@ def RMSLE(y, y_pred,msb):
     
     # Outputs:
     # cost_RMSLE - the computed mean square logarithmic error
-    
-    cost_RMSLE = T.sqrt(1/msb*T.sum((T.log(T.transpose(y_pred)+1)-T.log(y+1))**2))
 
-    return cost_MSE
+    #cost_RMSLE = T.sqrt(1/msb*T.sum(T.sqr(T.log(y_pred+1)-T.log(y+1))))
+
+    cost_RMSLE=T.sqrt(T.mean(T.sqr(T.log(y_pred+1)-T.log(y+1))))
+    
+    return cost_RMSLE
 
 
 
