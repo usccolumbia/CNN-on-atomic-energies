@@ -145,10 +145,45 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     valid_losses = [valid_model(i) for i in range(n_valid_batches)]
     valid_score = np.mean(valid_losses)
 
-
     train_error = []
     valid_error= []
 
+    w0_conv = layer0_params[0].get_value()
+    w1_conv = layer1_params[0].get_value()
+    w2_conv = layer2_params[0].get_value()
+            
+    w_fc = fc_layer_params[0].get_value()
+    
+    w0_conv = np.array(w0_conv[:, 0])
+    w1_conv = np.array(w0_conv[:, 0])
+    w2_conv = np.array(w0_conv[:, 0])
+
+    w_fc = np.array(w_fc[:, 0])
+    #biases_fc = fc_layer_params[1].get_value()
+    
+    # Create buffer arrays for the channel and fully connected
+    # layer weights. These are for following convergence.
+    w0_arr1 = np.array([w0_conv[:, 1, 1]]);
+    w0_arr2 = np.array([w0_conv[:, 2, 2]]);
+    w0_arr3 = np.array([w0_conv[:, 3, 3]])
+
+    w1_arr1 = np.array([w1_conv[:, 1, 1]]);
+    w1_arr2 = np.array([w1_conv[:, 2, 2]]);
+    w1_arr3 = np.array([w1_conv[:, 3, 3]])
+    
+    w2_arr1 = np.array([w2_conv[:, 1, 1]]);
+    w2_arr2 = np.array([w2_conv[:, 2, 2]]);
+    w2_arr3 = np.array([w2_conv[:, 3, 3]])
+
+    w_fc1 = np.array([w_fc[1, 1]])
+    w_fc2 = np.array([w_fc[2, 2]])
+    w_fc3 = np.array([w_fc[3, 3]])
+    
+    # Create a buffer array for the biases. These are for
+    # visualisation only!
+    #plot_biases_arr = np.array([np.transpose(layer0_params[1].get_value())])
+    #plot_biases_fc_arr = np.array([np.transpose(biases_fc[0:5])])                
+    
     # This is where we call the previously defined Theano functions.
     print('***** Training model *****')
     while (epoch < num_epochs):
@@ -171,62 +206,63 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             # Save validation error
             valid_error.append(valid_score)
             # Obtain the weights for visualisation
-            plots_conv = layer0_params[0].get_value()
-     #       plots_fc_wt = fc_layer_params[0].get_value()
-     #       biases_fc = fc_layer_params[1].get_value()
-            plots_wt = np.array(plots_conv[:, 0])
+            w0_conv = layer0_params[0].get_value()
+            wt0 = np.array(w0_conv[:, 0])
+            w0_arr1 = np.append(w0_arr1, [wt0[:, 1, 1]], axis=0)
+            w0_arr2 = np.append(w0_arr2, [wt0[:, 2, 2]], axis=0)
+            w0_arr3 = np.append(w0_arr3, [wt0[:, 3, 3]], axis=0)
             
-            # Append weights to the buffer arrays for visualisation
-            plot_arr1 = np.append(plot_arr1, [plots_wt[:, 1, 1]], axis=0)
-            plot_arr2 = np.append(plot_arr2, [plots_wt[:, 2, 2]], axis=0)
-            plot_arr3 = np.append(plot_arr3, [plots_wt[:, 3, 3]], axis=0)
-            #plot_fc1 = np.append(plot_fc1, [plots_fc_wt[1, 1]], axis=0)
-            #plot_fc2 = np.append(plot_fc2, [plots_fc_wt[2, 2]], axis=0)
-            #plot_fc3 = np.append(plot_fc3, [plots_fc_wt[3, 3]], axis=0)
-            plot_biases_arr = np.append(
-                plot_biases_arr,
-                [np.transpose(layer0_params[1].get_value())],
-                axis=0)
+            w1_conv = layer1_params[0].get_value()
+            wt1 = np.array(w1_conv[:, 0])
+            w1_arr1 = np.append(w1_arr1, [wt1[:, 1, 1]], axis=0)
+            w1_arr2 = np.append(w1_arr2, [wt1[:, 2, 2]], axis=0)
+            w1_arr3 = np.append(w1_arr3, [wt1[:, 3, 3]], axis=0)
+            
+            w2_conv = layer2_params[0].get_value()
+            wt2 = np.array(w2_conv[:, 0])
+            w2_arr1 = np.append(w2_arr1, [wt2[:, 1, 1]], axis=0)
+            w2_arr2 = np.append(w2_arr2, [wt2[:, 2, 2]], axis=0)
+            w2_arr3 = np.append(w2_arr3, [wt2[:, 3, 3]], axis=0)
+
+            w_fc = fc_layer_params[0].get_value()
+            w_fc = np.array(w_fc[:, 0])
+            w_fc1 = np.append(w_fc1, [w_fc[1, 1]], axis=0)
+            w_fc2 = np.append(w_fc2, [w_fc[2, 2]], axis=0)
+            w_fc3 = np.append(w_fc3, [w_fc[3, 3]], axis=0)
+            #       plots_fc_wt = fc_layer_params[0].get_value()
+            #       biases_fc = fc_layer_params[1].get_value()
+
+            #plot_biases_arr = np.append(
+             #   plot_biases_arr,
+              #  [np.transpose(layer0_params[1].get_value())],
+               # axis=0)
             #plot_biases_fc_arr = np.append(
              #   plot_biases_fc_arr,
              #   [np.transpose(biases_fc[0:5])],
              #   axis = 0)
             
-        #if (iter%100==0):
-        #    print('Iteration: '+str(iter)+', cost: '+str(cost_ij)+', epoch: '+str(epoch)+', valid. cost: '+str(valid_score))
-                          
-    print('***** Training Complete *****')
-    print('Validation error: '+str(valid_score))
-    print('Final cost: '+str(cost_ij))
-            
-    #predictions=test_model(6542)
-    #file = open('solution.csv','w')
-    #file.write('Sample_id,Sample_label')
-    #for i in range(Xtest.shape[0]):
-    #    file.write(str(i)+str(predictions[i]))
-    plt.ioff()
-    fig_tr, axarr = plt.subplots(5,figsize=(8, 10), sharex=True)
-    for ch_count in range(5):
-        l1 = axarr[ch_count].plot(plot_arr1[:, ch_count])
-        l2 = axarr[ch_count].plot(plot_arr2[:, ch_count])
-        l3 = axarr[ch_count].plot(plot_arr3[:, ch_count])
-        axarr[ch_count].yaxis.set_label_position("right")
-        axarr[ch_count].set_ylabel('Channel '+str(ch_count+1))
-        
-    axarr[0].set_title('Evolution of Three Arbitrary Weights in the 9 Channels')
-    axarr[8].set_xlabel('Iterations')
-        
-    fig_tr.subplots_adjust(hspace=0.1)
-    
-    fig_bias, axarr_bias = plt.subplots(5,figsize=(8, 10), sharex=True)
-    for ch_count in range(5):
-        axarr_bias[ch_count].plot(plot_biases_arr[:, ch_count], 'm-')
-        axarr_bias[ch_count].yaxis.set_label_position("right")
-        axarr_bias[ch_count].set_ylabel('Channel '+str(ch_count+1))
-    axarr_bias[0].set_title('Evolution of Biases')
-    axarr_bias[8].set_xlabel('Iterations')
-    fig_bias.subplots_adjust(hspace=0.1)
-    plt.show()
+
+#    for ch_count in range(5):
+#        l1 = axarr[ch_count].plot(plot_arr1[:, ch_count])
+#        l2 = axarr[ch_count].plot(plot_arr2[:, ch_count])
+#        l3 = axarr[ch_count].plot(plot_arr3[:, ch_count])
+#        axarr[ch_count].yaxis.set_label_position("right")
+#        axarr[ch_count].set_ylabel('Channel '+str(ch_count+1))
+#        
+#    axarr[0].set_title('Evolution of Three Arbitrary Weights in the 9 Channels')
+#    axarr[8].set_xlabel('Iterations')
+#        
+#    fig_tr.subplots_adjust(hspace=0.1)
+#    
+#    fig_bias, axarr_bias = plt.subplots(5,figsize=(8, 10), sharex=True)
+#    for ch_count in range(5):
+#        axarr_bias[ch_count].plot(plot_biases_arr[:, ch_count], 'm-')
+#        axarr_bias[ch_count].yaxis.set_label_position("right")
+#        axarr_bias[ch_count].set_ylabel('Channel '+str(ch_count+1))
+#    axarr_bias[0].set_title('Evolution of Biases')
+#    axarr_bias[8].set_xlabel('Iterations')
+#    fig_bias.subplots_adjust(hspace=0.1)
+#    plt.show()#
 
     # Return values:
     # * train_error <list of floats>
@@ -235,4 +271,4 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     # * w2
     # * w3
     # * wfc
-    return train_error, valid_error
+    return train_error, valid_error, w0_arr1,w0_arr2,w0_arr3,w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,w2_arr3,w_fc1,w_fc2,w_fc3
