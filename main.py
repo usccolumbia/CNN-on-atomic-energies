@@ -1,6 +1,7 @@
 import numpy as np
 import theano
 import theano.tensor as T
+import matplotlib.pyplot as plt
 import load_data
 #import plotting
 import time
@@ -14,7 +15,7 @@ Ntrain=60
 Nval=Ndata-Ntrain
 
 alpha  = 0.0001   # Adam Learning rate
-Nepoch = 3      # Number of epochs
+Nepoch = 1     # Number of epochs
 Nf     = [10,10,20] # Number of filters in each convlayer
 mbs    = 5      # minibatch size
 reg    = 0.001  # Regularization parameter
@@ -69,6 +70,27 @@ train_set_x, train_set_y, train_set = load_data.shared_dataset(
 ###############################################################
 
 
-Et,Ev,w0_1,w0_2,w0_3, w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,w2_arr3,wf_arr1,wf_arr2,wf_arr3= run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,alpha,Nepoch,Nf,mbs,reg)
+Et,Ev,w0_arr1,w0_arr2,w0_arr3, w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wf1_arr1,wf1_arr2,wf1_arr3,wf2_arr1,wf2_arr2,wf2_arr3= run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,alpha,Nepoch,Nf,mbs,reg)
 
-print(w0_1.shape)
+dir='test'
+np.savetxt(dir+'/et.txt',Et)
+np.savetxt(dir+'/ev.txt',Ev)
+for i in range(Nf[0]):
+    np.savetxt(dir+'/w0_sample1_channel_'+str(i+1)+'.txt',w0_arr1)
+    np.savetxt(dir+'/w0_sample2_channel_'+str(i+1)+'.txt',w0_arr2)
+    np.savetxt(dir+'/w0_sample3_channel_'+str(i+1)+'.txt',w0_arr3)
+for i in range(Nf[1]):
+    np.savetxt(dir+'/w1_sample1_channel_'+str(i+1)+'.txt',w1_arr1)
+    np.savetxt(dir+'/w1_sample2_channel_'+str(i+1)+'.txt',w1_arr2)
+    np.savetxt(dir+'/w1_sample3_channel_'+str(i+1)+'.txt',w1_arr3)
+for i in range(Nf[2]):
+    np.savetxt(dir+'/w2_sample1_channel_'+str(i+1)+'.txt',w2_arr1)
+    np.savetxt(dir+'/w2_sample2_channel_'+str(i+1)+'.txt',w2_arr2)
+for i in range(3):
+    np.savetxt(dir+'/wfc1_sample1.txt',wf1_arr1)
+    np.savetxt(dir+'/wfc1_sample2.txt',wf1_arr2)
+    np.savetxt(dir+'/wfc1_sample3.txt',wf1_arr3)
+for i in range(2):
+    np.savetxt(dir+'/wfc2_sample1.txt',wf2_arr1)
+    np.savetxt(dir+'/wfc2_sample2.txt',wf2_arr2)
+    np.savetxt(dir+'/wfc2_sample3.txt',wf2_arr3)

@@ -115,7 +115,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     params = [W, b]
     return output, params
 
-def fullyConnectedLayer(rng,data_input, num_in):
+def fullyConnectedLayer(rng,data_input, num_in,num_out):
     # Function to create the fully-connected layer and makes use of the
     # output from the previous layer. It is the final layer in the
     # convolutional neural network architecture and comprises of the
@@ -141,14 +141,14 @@ def fullyConnectedLayer(rng,data_input, num_in):
         value=np.asarray(
             rng.uniform(low=-w_bound,
                         high=w_bound,
-                        size=(num_in,1))),
+                        size=(num_in,num_out))),
         name='W',
         borrow=True)
     
     # Creating a shared variable for biases that are initialised with
     # zeros.
     b = theano.shared(
-        value=np.zeros((1,)),
+        value=np.zeros((num_out,)),
         name='b',
         borrow=True)
     
