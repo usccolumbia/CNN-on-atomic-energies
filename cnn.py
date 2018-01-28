@@ -48,7 +48,7 @@ def pooling(input_pool, size):
     #            dimensions: (# of channels, conv_output_height/#rows,
     #                         conv_output_width/#rows)
     
-    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=False,mode='max')
+    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=False,mode='sum')
     return pool_out
 
 def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
@@ -74,11 +74,11 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     # drawn from a gaussian distribution with 0 mean and standard deviation of
     # 0.1. This is just a random initialisation.
     m=image_spec[1]*image_spec[2]*image_spec[3]
-    n=m*filter_spec[0]
+    n=filter_spec[0]
     w_bound=np.sqrt(6./(m+n))
-    W = theano.shared(np.asarray(rng.uniform(low=-w_bound,
-                                             high=w_bound,
-                                             size=filter_spec)), borrow=True)
+    W = theano.shared(
+        np.asarray(rng.normal(loc=0, scale=w_bound, size=filter_spec)),
+        borrow=True)
     # Bias is a 1 D tensor -- one bias per output feature map.
     # Initialised with zeros.
     b = theano.shared(np.zeros((filter_spec[0],)), borrow=True)
@@ -136,7 +136,7 @@ def fullyConnectedLayer(rng,data_input, num_in,num_out):
     # Creating a shared variable for weights that are initialised with samples
     # drawn from a gaussian distribution with 0 mean and standard deviation of
     # 0.1. This is just a random initialisation.
-    w_bound=np.sqrt(6./(num_in+1))
+    w_bound=np.sqrt(6./(num_in+num_out))
     W = theano.shared(
         value=np.asarray(
             rng.uniform(low=-w_bound,
