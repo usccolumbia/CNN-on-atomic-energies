@@ -30,32 +30,40 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     # Reshaping tensor of mini_batch_size set of images into a
     # 4-D tensor of dimensions: mini_batch_size x 1 x 80 x 80
     layer0_input = x.reshape((mini_batch_size,1,80,80))
-    
+
     # First convolution and pooling layer
     [layer0_output, layer0_params] = cnn.convLayer(
         rng,
         data_input=layer0_input,
         image_spec=(mini_batch_size, 1, 80, 80),
-        filter_spec=(num_filters[0], 1, 21, 21),
-        pool_size=(3,3),
-        activation=T.tanh)
+        filter_spec=(num_filters[0], 1, 9, 9),
+        pool_size=(2,2),
+        activation=T.nnet.relu)
 
     # Second convolution and pooling layer
     [layer1_output, layer1_params] = cnn.convLayer(
         rng,
         data_input=layer0_output,
-        image_spec=(mini_batch_size, num_filters[0], 20, 20),
+        image_spec=(mini_batch_size, num_filters[0], 36, 36),
         filter_spec=(num_filters[1],num_filters[0],5,5),
         pool_size=(2,2),
-        activation=T.tanh)
+        activation=T.nnet.elu)
     
     [layer2_output, layer2_params] = cnn.convLayer(
         rng,
         data_input=layer1_output,
-        image_spec=(mini_batch_size, num_filters[1], 8, 8),
-        filter_spec=(num_filters[2], num_filters[1], 3, 3),
+        image_spec=(mini_batch_size, num_filters[1], 16, 16),
+        filter_spec=(num_filters[2], num_filters[1], 5, 5),
         pool_size=( 2,2),
-        activation=T.tanh)
+        activation=T.nnet.elu)
+
+    #[layer3_output, layer3_params] = cnn.convLayer(
+    #    rng,
+    #    data_input=layer2_output,
+    #    image_spec=(mini_batch_size, num_filters[2], 6, 6),
+    #    filter_spec=(num_filters[3], num_filters[2], 3, 3),
+    #    pool_size=( 2,2),
+    #    activation=T.tanh)
 
 
     # Flatten the output into dimensions:
@@ -64,16 +72,16 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
 
     # The fully connected layer operates on a matrix of
     # dimensions: mini_batch_size x 1098# It clasifies the values using the softmax function.
-    [fc1_layer_output, fc1_layer_params] = cnn.fullyConnectedLayer(
+    #[fc1_layer_output, fc1_layer_params] = cnn.fullyConnectedLayer(
+    #    rng=rng,
+    #    data_input=fc_layer_input,
+    #    num_in=num_filters[3]*2*2,
+    #    num_out=10)
+
+    [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=fc_layer_input,
-        num_in=num_filters[2]*3*3,
-        num_out=40)
-
-    [E_pred, fc2_layer_params] = cnn.fullyConnectedLayer(
-        rng=rng,
-        data_input=fc1_layer_output,
-        num_in=40,
+        num_in=num_filters[2]*6*6,
         num_out=1)
     
     # Cost that is minimised during stochastic descent. Includes regularization
@@ -113,17 +121,19 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
                 (mb_index + 1) * mini_batch_size
             ]})
     
-    #test_model = theano.function(
-    #    [mb_index],
-    #    y_pred,
-    #    givens={
-    #        x: test_set_x[
-    #            0:mb_index
-    #        ]})
+    predict = theano.function(
+        [mb_index],
+        E_pred,
+        givens={
+            x : valid_set_x[
+                mb_index * mini_batch_size:
+                (mb_index+1) * mini_batch_size
+                
+            ]})
     
 
     # List of parameters to be fit during training
-    params = fc1_layer_params + fc2_layer_params + layer0_params + layer1_params + layer2_params
+    params = fc_layer_params + layer0_params + layer1_params + layer2_params#+ fc2_layer_params + layer3_params
     
     # Creates a function that updates the model parameters by SGD.
     # The updates list is created by looping over all
@@ -159,8 +169,8 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     w0_conv = layer0_params[0].get_value()
     w1_conv = layer1_params[0].get_value()
     w2_conv = layer2_params[0].get_value()      
-    w_fc1 = fc1_layer_params[0].get_value()
-    w_fc2 = fc2_layer_params[0].get_value()
+    w_fc1 = fc_layer_params[0].get_value()
+    #w_fc2 = fc2_layer_params[0].get_value()
 
     # Save weights from only the bottom layer of the filter
     w0_conv = np.array(w0_conv[:, 0])
@@ -181,13 +191,13 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     w2_arr1 = np.array([w2_conv[:, 1, 1]]);
     w2_arr2 = np.array([w2_conv[:, 2, 2]]);
 
-    wfc1_arr1 = np.array([w_fc1[1, 1]])
-    wfc1_arr2 = np.array([w_fc1[2, 2]])
-    wfc1_arr3 = np.array([w_fc1[3, 3]])
+    wfc1_arr1 = np.array([w_fc1[0]])
+    wfc1_arr2 = np.array([w_fc1[1]])
+    wfc1_arr3 = np.array([w_fc1[2]])
 
-    wfc2_arr1 = np.array([w_fc2[0]])
-    wfc2_arr2 = np.array([w_fc2[1]])
-    wfc2_arr3 = np.array([w_fc2[2]])
+    #wfc2_arr1 = np.array([w_fc2[0]])
+    #wfc2_arr2 = np.array([w_fc2[1]])
+    #wfc2_arr3 = np.array([w_fc2[2]])
             
     
     # This is where we call the previously defined Theano functions.
@@ -232,16 +242,25 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             w2_arr1 = np.append(w2_arr1, [wt2[:, 1, 1]], axis=0)
             w2_arr2 = np.append(w2_arr2, [wt2[:, 2, 2]], axis=0)
 
-            w_fc1 = fc1_layer_params[0].get_value()
-            wfc1_arr1 = np.append(wfc1_arr1, [w_fc1[1, 1]], axis=0)
-            wfc1_arr2 = np.append(wfc1_arr2, [w_fc1[2, 2]], axis=0)
-            wfc1_arr3 = np.append(wfc1_arr3, [w_fc1[3, 3]], axis=0)
+            w_fc1 = fc_layer_params[0].get_value()
+            wfc1_arr1 = np.append(wfc1_arr1, [w_fc1[0]], axis=0)
+            wfc1_arr2 = np.append(wfc1_arr2, [w_fc1[1]], axis=0)
+            wfc1_arr3 = np.append(wfc1_arr3, [w_fc1[2]], axis=0)
 
-            w_fc2 = fc2_layer_params[0].get_value()
-            wfc2_arr1 = np.append(wfc2_arr1, [w_fc2[0]], axis=0)
-            wfc2_arr2 = np.append(wfc2_arr2, [w_fc2[1]], axis=0)
-            wfc2_arr3 = np.append(wfc2_arr3, [w_fc2[2]], axis=0)
+     #       w_fc2 = fc2_layer_params[0].get_value()
+     #       wfc2_arr1 = np.append(wfc2_arr1, [w_fc2[0]], axis=0)
+     #       wfc2_arr2 = np.append(wfc2_arr2, [w_fc2[1]], axis=0)
+     #       wfc2_arr3 = np.append(wfc2_arr3, [w_fc2[2]], axis=0)
 
+    # Get predicted energies from validation set
+    E = np.zeros((n_valid_batches*mini_batch_size,1))
+    step=0
+    for i in range(n_valid_batches):
+        buf = predict(i)
+        for j in range(mini_batch_size):
+            E[step,0]=buf[j]
+            step=step+1
+            
     # Return values:
     # * train_error <list of floats>
     # * valid_error <list of floats>
@@ -249,4 +268,4 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     # * w2
     # * w3
     # * wfc         <np.array((#iterations,1))>
-    return train_error, valid_error, w0_arr1,w0_arr2,w0_arr3,w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wfc1_arr1,wfc1_arr2,wfc1_arr3,wfc2_arr1,wfc2_arr2,wfc2_arr3
+    return train_error, valid_error, w0_arr1,w0_arr2,w0_arr3,w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wfc1_arr1,wfc1_arr2,wfc1_arr3,E#wfc2_arr1,wfc2_arr2,wfc2_arr3
