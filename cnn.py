@@ -73,11 +73,11 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     # Creating a shared variable for weights that are initialised with samples
     # drawn from a gaussian distribution with 0 mean and standard deviation of
     # 0.1. This is just a random initialisation.
-    m=image_spec[1]*image_spec[2]*image_spec[3]
-    n=filter_spec[0]
-    w_bound=np.sqrt(6./(m+n))
+    #m=filter_spec[1]*filter_spec[2]*filter_spec[3]
+    #n=filter_spec[0]*image_spec[2]*image_spec[3]/2
+    #w_bound=np.sqrt(6./(m+n))
     W = theano.shared(
-        np.asarray(rng.normal(loc=0, scale=w_bound, size=filter_spec)),
+        np.asarray(rng.normal(0, 0.01, size=filter_spec)),
         borrow=True)
     # Bias is a 1 D tensor -- one bias per output feature map.
     # Initialised with zeros.
@@ -153,12 +153,17 @@ def fullyConnectedLayer(rng,data_input, num_in,num_out):
         borrow=True)
     
     # Compute predicted energies
-    E_pred = T.nnet.relu(T.dot(data_input, W) + b)
+    E_pred = T.dot(data_input, W) + b
         
     # Combine weights and biases into a single list.
     params = [W, b]
     return E_pred, params
 
+def MSE(y,y_pred):
+    # Function to compute root mean square error
+    cost_MSE=T.mean(T.sqr(y-y_pred))
+    return cost_MSE
+    
 def RMSLE(y, y_pred):
     # Function to compute the cost that is to be minimised.
 
