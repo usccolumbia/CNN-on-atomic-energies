@@ -3,5 +3,5 @@
 *.pyc
 #*
 *.txt
-CM
+CM*
 test

@@ -10,14 +10,14 @@ import run_cnn
 
 rd.seed(23455)
 
-Ndata=100
-Ntrain=60
+Ndata=2400
+Ntrain=2000
 Nval=Ndata-Ntrain
 
-alpha  = 0.0001   # Adam Learning rate
-Nepoch = 1     # Number of epochs
-Nf     = [10,10,20] # Number of filters in each convlayer
-mbs    = 5      # minibatch size
+alpha  = 0.0005   # Adam Learning rate
+Nepoch = 2     # Number of epochs
+Nf     = [5,5,10] # Number of filters in each convlayer
+mbs    = 50      # minibatch size
 reg    = 0.001  # Regularization parameter
 
 ###### Location of data ######
@@ -70,27 +70,32 @@ train_set_x, train_set_y, train_set = load_data.shared_dataset(
 ###############################################################
 
 
-Et,Ev,w0_arr1,w0_arr2,w0_arr3, w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wf1_arr1,wf1_arr2,wf1_arr3,wf2_arr1,wf2_arr2,wf2_arr3= run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,alpha,Nepoch,Nf,mbs,reg)
+Et,Ev,w0_arr1,w0_arr2,w0_arr3, w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wf1_arr1,wf1_arr2,wf1_arr3,E= run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,alpha,Nepoch,Nf,mbs,reg)
 
 dir='test'
 np.savetxt(dir+'/et.txt',Et)
 np.savetxt(dir+'/ev.txt',Ev)
-for i in range(Nf[0]):
-    np.savetxt(dir+'/w0_sample1_channel_'+str(i+1)+'.txt',w0_arr1)
-    np.savetxt(dir+'/w0_sample2_channel_'+str(i+1)+'.txt',w0_arr2)
-    np.savetxt(dir+'/w0_sample3_channel_'+str(i+1)+'.txt',w0_arr3)
-for i in range(Nf[1]):
-    np.savetxt(dir+'/w1_sample1_channel_'+str(i+1)+'.txt',w1_arr1)
-    np.savetxt(dir+'/w1_sample2_channel_'+str(i+1)+'.txt',w1_arr2)
-    np.savetxt(dir+'/w1_sample3_channel_'+str(i+1)+'.txt',w1_arr3)
-for i in range(Nf[2]):
-    np.savetxt(dir+'/w2_sample1_channel_'+str(i+1)+'.txt',w2_arr1)
-    np.savetxt(dir+'/w2_sample2_channel_'+str(i+1)+'.txt',w2_arr2)
-for i in range(3):
-    np.savetxt(dir+'/wfc1_sample1.txt',wf1_arr1)
-    np.savetxt(dir+'/wfc1_sample2.txt',wf1_arr2)
-    np.savetxt(dir+'/wfc1_sample3.txt',wf1_arr3)
-for i in range(2):
-    np.savetxt(dir+'/wfc2_sample1.txt',wf2_arr1)
-    np.savetxt(dir+'/wfc2_sample2.txt',wf2_arr2)
-    np.savetxt(dir+'/wfc2_sample3.txt',wf2_arr3)
+
+np.savetxt(dir+'/w0_sample1.txt',w0_arr1)
+np.savetxt(dir+'/w0_sample2.txt',w0_arr2)
+np.savetxt(dir+'/w0_sample3.txt',w0_arr3)
+
+np.savetxt(dir+'/w1_sample1.txt',w1_arr1)
+np.savetxt(dir+'/w1_sample2.txt',w1_arr2)
+np.savetxt(dir+'/w1_sample3.txt',w1_arr3)
+
+np.savetxt(dir+'/w2_sample1.txt',w2_arr1)
+np.savetxt(dir+'/w2_sample2.txt',w2_arr2)
+
+np.savetxt(dir+'/wfc1_sample1.txt',wf1_arr1)
+np.savetxt(dir+'/wfc1_sample2.txt',wf1_arr2)
+np.savetxt(dir+'/wfc1_sample3.txt',wf1_arr3)
+
+#np.savetxt(dir+'/wfc2_sample1.txt',wf2_arr1)
+#np.savetxt(dir+'/wfc2_sample2.txt',wf2_arr2)
+#np.savetxt(dir+'/wfc2_sample3.txt',wf2_arr3)
+
+np.savetxt(dir+'/E_pred.txt',E)
+np.savetxt(dir+'/E_target.txt',Yval)
+
+
