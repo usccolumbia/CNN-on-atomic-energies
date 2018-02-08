@@ -4,6 +4,14 @@ import theano
 import theano.tensor as T
 import random as rd
 
+def RandomSort(X,sigma):
+    np.random.seed()
+    r=LA.norm(X,axis=1)
+    r=r+np.random.normal(0,sigma,80)
+    i=np.argsort(r)
+    X1=X[:,i]
+    return X1[i]
+
 def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
     rd.seed(23455)
     indices = 0
@@ -26,6 +34,25 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
                                         dtype=theano.config.floatX),
                              borrow=borrow)
     return shared_x, shared_y, (x, y)
+
+def shared_testset(data_x, sample_size=600, borrow=True):
+    rd.seed(23455)
+    indices = 0
+    if (sample_size < 0):
+        print('Sample size too small!')
+        return
+    try:
+        indices = rd.sample(range(0, sample_size), sample_size)
+    except ValueError:
+        print('Sample size exceeds data size.')
+    x = np.zeros((sample_size,6400))
+    x = data_x[indices, :]
+        
+    shared_x = theano.shared(np.asarray(x,
+                                        dtype=theano.config.floatX),
+                             borrow=borrow)
+
+    return shared_x
 
 
 def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
