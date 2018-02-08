@@ -5,15 +5,17 @@ from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 import matplotlib.pyplot as plt
 import cnn
 
-def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_epochs,num_filters,mini_batch_size,reg):
+def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,test_set_x,learning_rate,num_epochs,num_filters,mini_batch_size,reg):
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
     
     # Computing number of mini-batches
     n_train_batches = train_set_x.get_value(borrow=True).shape[0]
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0]
+    n_test_batches = test_set_x.get_value(borrow=True).shape[0]
     n_train_batches //= mini_batch_size
     n_valid_batches //= mini_batch_size
+    n_test_batches //= mini_batch_size
         
     print('train: %d batches, validation: %d batches'
           % (n_train_batches, n_valid_batches))
@@ -85,17 +87,19 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
         num_out=1)
     
     # Cost that is minimised during stochastic descent. Includes regularization
-    cost = cnn.RMSLE(y,E_pred)
-#    L2_reg=T.sum(T.sqr(layer0_params[0]))/(num_filters[0]*5*5)
-#    L2_reg=L2_reg+T.sum(T.sqr(layer0_params[1]))/(num_filters[0])
-#    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[0]))/(num_filters[1]*2*2*10)
-#    L2_reg=L2_reg+T.sum(T.sqr(fc_layer_params[1]))/10
-#    L2_reg=L2_reg+T.sum(T.sqr(layer1_params[0]))/(num_filters[1]*num_filters[0]*3*3)
-#    L2_reg=L2_reg+T.sum(T.sqr(layer1_params[1]))/num_filters[1]
-    #L2_reg=L2_reg+T.sum(T.sqr(layer2_params[0]))/(num_filters[1]*num_filters[0]*2*3)
-    #L2_reg=L2_reg+T.sum(T.sqr(layer2_params[1])/num_filters[2])
+    cost = cnn.MSE(y,E_pred)
+    # Cost to be evaluated at kaggle, checked at validation
+    #cost_val = cnn.RMSLE(y,E_pred)
+    #
 
-#    cost=cost+reg*L2_reg
+    L2_reg=T.mean(T.sqr(layer0_params[0]))
+    L2_reg=L2_reg+T.mean(T.sqr(layer1_params[0]))
+    L2_reg=L2_reg+T.mean(T.sqr(layer2_params[0]))
+    L2_reg=L2_reg+T.mean(T.sqr(fc_layer_params[0]))
+#    L2_reg=L2_reg+T.sum(T.sqr(layer2_params[0]))/(num_filters[1]*num_filters[0]*2*3)
+#    L2_reg=L2_reg+T.sum(T.sqr(layer2_params[1])/num_filters[2])
+
+    cost=cost+reg*L2_reg
     
     # Creates a Theano function that computes the mistakes on the validation set.
     # This performs validation.
@@ -130,6 +134,16 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
                 (mb_index+1) * mini_batch_size
                 
             ]})
+
+    test_model = theano.function(
+        [mb_index],
+        E_pred,
+        givens={
+            x: test_set_x[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ]})
+    
     
 
     # List of parameters to be fit during training
@@ -247,20 +261,25 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
             wfc1_arr2 = np.append(wfc1_arr2, [w_fc1[1]], axis=0)
             wfc1_arr3 = np.append(wfc1_arr3, [w_fc1[2]], axis=0)
 
-     #       w_fc2 = fc2_layer_params[0].get_value()
-     #       wfc2_arr1 = np.append(wfc2_arr1, [w_fc2[0]], axis=0)
-     #       wfc2_arr2 = np.append(wfc2_arr2, [w_fc2[1]], axis=0)
-     #       wfc2_arr3 = np.append(wfc2_arr3, [w_fc2[2]], axis=0)
+            if (iter%20==0):
+                # Get predicted energies from validation set
+                E = np.zeros((n_valid_batches*mini_batch_size,1))
+                step=0
+                for i in range(n_valid_batches):
+                    buf = predict(i)
+                    for j in range(mini_batch_size):
+                        E[step,0]=buf[j]
+                        step=step+1
+                np.savetxt('test/E_pred_'+str(iter)+'.txt',E)
 
-    # Get predicted energies from validation set
-    E = np.zeros((n_valid_batches*mini_batch_size,1))
+    # Predict energies for test set
+    E_test = np.zeros((n_test_batches*mini_batch_size,1))
     step=0
-    for i in range(n_valid_batches):
-        buf = predict(i)
+    for i in range(n_test_batches):
+        buf = test_model(i)
         for j in range(mini_batch_size):
             E[step,0]=buf[j]
             step=step+1
-            
     # Return values:
     # * train_error <list of floats>
     # * valid_error <list of floats>
@@ -268,4 +287,4 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,learning_rate,num_e
     # * w2
     # * w3
     # * wfc         <np.array((#iterations,1))>
-    return train_error, valid_error, w0_arr1,w0_arr2,w0_arr3,w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wfc1_arr1,wfc1_arr2,wfc1_arr3,E#wfc2_arr1,wfc2_arr2,wfc2_arr3
+    return train_error, valid_error, w0_arr1,w0_arr2,w0_arr3,w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wfc1_arr1,wfc1_arr2,wfc1_arr3,E_test#wfc2_arr1,wfc2_arr2,wfc2_arr3
