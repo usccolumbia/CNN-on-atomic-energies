@@ -1,5 +1,3 @@
 theano
 pytest
-pytest-cov
-python-coveralls
-matplotlib
+
