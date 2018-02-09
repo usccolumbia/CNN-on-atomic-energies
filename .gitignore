@@ -1,5 +1,5 @@
 *CM
 *data
 *~
-#*
-*.txt
+venv/
+.cache/
