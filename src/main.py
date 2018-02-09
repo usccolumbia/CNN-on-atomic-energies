@@ -1,3 +1,5 @@
+import sys
+print(sys.path)#.append("/homeappl/home/krsimula/appl_taito/src/ZOFCNN/src/")
 import numpy as np
 import theano
 import theano.tensor as T
@@ -7,23 +9,25 @@ import time
 import random as rd
 import run_cnn
 
+print('******* Import complete *******')
+
 rd.seed()
 
-Ndata=2400
-Naug=7200
+Ndata=2
+Naug=2
 
-Ntrain=8000
-Nval=1600
+Ntrain=2
+Nval=2
 
 alpha  = 0.0005   # Adam Learning rate
 Nepoch = 10     # Number of epochs
 Nf     = [10,10,10] # Number of filters in each convlayer
-mbs    = 50      # minibatch size
+mbs    = 1      # minibatch size
 reg    = 0.01  # Regularization parameter   %  
 
 ###### Location of data ######
-datapath = '/u/82/simulak1/unix/Desktop/kurssit/deep_learning/project/data'
-filename = datapath+'/train.csv'
+datapath = '/wrk/krsimula/DONOTREMOVE/NEURAL_NETWORKS/CNN-on-atomic-energies/'
+filename = datapath+'data/train.csv'
 ############################## 
 
 #######  Get all available raw data ###### 
@@ -37,7 +41,7 @@ print("Time taken to load data: "+str(end-start)+"\n")
 ###### Get geometry data ###### 
 print("*** Loading geometry data ***")
 start=time.time()
-xyz_Train,elements_Train,lattices_Train=load_data.get_geometry(Ndata,datapath)
+xyz_Train,elements_Train,lattices_Train=load_data.get_geometry(Ndata,datapath+'data')
 end=time.time()
 print("Time taken to load geometry data: "+str(end-start)+"\n")
 ################################
@@ -49,7 +53,7 @@ Xdata=np.zeros((Ndata+Naug,80,80))
 Ydata=np.zeros((Ndata+Naug,1))
 step=0
 for i in np.arange(Ndata):
-    X=np.loadtxt('CM/'+str(i+1)+'.gz')
+    X=np.loadtxt(datapath+'CM/train/'+str(i+1)+'.gz')
     XX = load_data.RandomSort(X,0.15)
     Xdata[step,:,:]=XX
     Ydata[step,0]=100*Ef[i]
@@ -57,7 +61,7 @@ for i in np.arange(Ndata):
     
 for i in np.arange(Naug):
     j = rd.randrange(0,Ndata)
-    X=np.loadtxt('CM/'+str(j+1)+'.gz')
+    X=np.loadtxt(datapath+'CM/train/'+str(j+1)+'.gz')
     XX = load_data.RandomSort(X,0.15)
     Xdata[step,:,:]=XX
     Ydata[step,0]=100*Ef[j]
@@ -81,7 +85,7 @@ for i in range(Ntrain):
     Xtrain[i,:]=Xdata[ind,:,:].flatten(0)
     Ytrain[i,0]=Ydata[ind,0]
 for i in range(600):
-    X=np.loadtxt('CM_test/'+str(i+1))
+    X=np.loadtxt(datapath+'CM/test/'+str(i+1))
     Xtest[i,:]=X.flatten(0)
 ################################################################
 
@@ -96,11 +100,10 @@ train_set_x, train_set_y, train_set = load_data.shared_dataset(
 test_set_x = load_data.shared_testset(Xtest) 
 ###############################################################
 
-dir='test'
+dir='output'
 np.savetxt(dir+'/E_target.txt',Yval)
 Et,Ev,w0_arr1,w0_arr2,w0_arr3, w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wf1_arr1,wf1_arr2,wf1_arr3,E_test= run_cnn.TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,test_set_x,alpha,Nepoch,Nf,mbs,reg)
 
-dir='test'
 np.savetxt(dir+'/et.txt',Et)
 np.savetxt(dir+'/ev.txt',Ev)
 

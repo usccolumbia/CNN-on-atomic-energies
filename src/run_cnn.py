@@ -278,7 +278,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,test_set_x,learning
     for i in range(n_test_batches):
         buf = test_model(i)
         for j in range(mini_batch_size):
-            E[step,0]=buf[j]
+            E_test[step,0]=buf[j]
             step=step+1
     # Return values:
     # * train_error <list of floats>
