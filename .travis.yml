@@ -1,14 +1,15 @@
 language:
   - python
 
-python
+python:
   - 2.7
+  - 3.6
 
 install:
   - pip install theano
 
 script:
-  - python src/tests_load_data.py
+  - python src/test_load_data.py
 
 notifications:
 email: false
