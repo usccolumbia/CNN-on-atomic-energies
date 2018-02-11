@@ -8,9 +8,8 @@ def RandomSort(X,sigma):
     np.random.seed()
     
     xdim=X.shape[0]
-
     r=LA.norm(X,axis=1)
-    r=r+np.random.normal(0,sigma,xdim)
+    r=r+np.random.normal(0.0,sigma,xdim)
     i=np.argsort(r)
     X1=X[:,i]
     return X1[i]
