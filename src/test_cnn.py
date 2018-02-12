@@ -1,8 +1,6 @@
 import theano
 import theano.tensor as T
 import numpy as np
-from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
-import matplotlib.pyplot as plt
 import cnn
 
 def test_gradient_updates_Adam():
