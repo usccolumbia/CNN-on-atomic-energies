@@ -114,7 +114,7 @@ def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
         ri_rel=xyz_rel[i,:]
         for j in np.arange(i,N):
             if(i==j):
-                CM[i,i]=0.5*Z[i]**2.4
+                CM[i,i]=0.5*(Z[i]**2.4)
             else:
                 rj = xyz[j]
                 rj_rel=xyz_rel[j,:]
