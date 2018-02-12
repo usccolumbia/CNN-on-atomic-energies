@@ -5,6 +5,294 @@ import theano.tensor as T
 import random as rd
 import load_data
 
+def test_make_correlation_matrix_fast():
+
+    ### Reference matrix ####
+    CM_manual=np.zeros((2,2))
+    
+    Z_Ga = 31
+    Z_Al = 13
+    d=np.sqrt(2)
+
+    CM_manual[0,0] = 0.5*(Z_Ga**2.4)
+    CM_manual[1,1] = 0.5*(Z_Al**2.4)
+    CM_manual[0,1] = Z_Ga*Z_Al/d
+    CM_manual[1,0] = Z_Ga*Z_Al/d
+    ###########################
+    
+    # 1)
+    xyz=[]
+    elm=[]
+    lat=[]
+    
+    r1=np.array((1.5,1.5,0))
+    r2=np.array((2.5,2.5,0))
+    
+    l1=np.array((4,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,100))
+    
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                print(CM_manual)
+                print(CM)
+                same=False
+                
+    assert same
+    # 2)                                                                                                          
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((1.5,2.5,0))
+    r2=np.array((2.5,1.5,0))
+
+    l1=np.array((4,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,100))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                same=False
+
+    assert same
+    # 3)                                                                                                          
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((0,1.5,1.5))
+    r2=np.array((0,2.5,2.5))
+
+    l1=np.array((100,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,4))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                same=False
+    assert same
+                
+    # 4)                                                                                                          
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((0,2.5,1.5))
+    r2=np.array((0,1.5,2.5))
+
+    l1=np.array((100,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,4))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                same=False
+    assert same
+
+    # 5)                                                                                                          
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((0.5,0.5,0))
+    r2=np.array((3.5,3.5,0))
+
+    l1=np.array((4,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,100))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                same=False
+    assert same
+
+    # 6)                                                                                                          
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((3.5,0.5,0))
+    r2=np.array((0.5,3.5,0))
+
+    l1=np.array((4,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,100))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                same=False
+    
+    assert same
+
+    # 7)                                                                                                          
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((0,0.5,0.5))
+    r2=np.array((0,3.5,3.5))
+
+    l1=np.array((100,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,4))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                same=False
+    
+    assert same
+
+    # 8)       
+
+    xyz=[]
+    elm=[]
+    lat=[]
+
+    r1=np.array((0,0.5,3.5))
+    r2=np.array((0,3.5,0.5))
+
+    l1=np.array((100,0,0))
+    l2=np.array((0,4,0))
+    l3=np.array((0,0,4))
+
+    elm1="Ga"
+    elm2="Al"
+
+    xyz.append(r1)
+    xyz.append(r2)
+
+    lat.append(l1)
+    lat.append(l2)
+    lat.append(l3)
+
+    elm.append(elm1)
+    elm.append(elm2)
+
+    CM=load_data.make_correlation_matrix_fast(xyz,lat,elm)
+    same=True
+    for i in range(2):
+        for j in range(2):
+            if (np.abs(CM_manual[i,j]-CM[i,j])>0.001):
+                print(CM_manual)
+                print(CM)
+                same=False
+
+
+    assert same
+
 def test_RandomSort():
 
     ##### Test that array is permuted correctly ########
