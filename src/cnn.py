@@ -153,7 +153,7 @@ def fullyConnectedLayer(rng,data_input, num_in,num_out):
         borrow=True)
     
     # Compute predicted energies
-    E_pred = T.dot(data_input, W) + b
+    E_pred = T.tanh(T.dot(data_input, W) + b)
         
     # Combine weights and biases into a single list.
     params = [W, b]
