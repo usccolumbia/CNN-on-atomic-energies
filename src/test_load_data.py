@@ -56,7 +56,7 @@ def test_make_correlation_matrix_fast():
                 print(CM)
                 same=False
                 
-    assert False
+    assert same
     # 2)                                                                                                          
     xyz=[]
     elm=[]
