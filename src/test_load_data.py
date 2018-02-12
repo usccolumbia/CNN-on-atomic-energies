@@ -5,6 +5,8 @@ import theano.tensor as T
 import random as rd
 import load_data
 
+
+
 def test_make_correlation_matrix_fast():
 
     ### Reference matrix ####
@@ -54,7 +56,7 @@ def test_make_correlation_matrix_fast():
                 print(CM)
                 same=False
                 
-    assert same
+    assert False
     # 2)                                                                                                          
     xyz=[]
     elm=[]
