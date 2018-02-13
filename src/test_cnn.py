@@ -3,7 +3,7 @@ import theano.tensor as T
 import numpy as np
 import cnn
 
-def test_fullyConnectedLayer(Npoints,Nnodes,Nsteps,learning_rate):
+def test_fullyConnectedLayer():
     '''
     Test that the fully connected layer works. This trains sine function 
     for a FCNN with one hidden layer of 4 units. For visualization check test.py.
@@ -53,7 +53,7 @@ def test_fullyConnectedLayer(Npoints,Nnodes,Nsteps,learning_rate):
     
     for i in range(2000):
         cost_i=train(Xtrain,Ytrain)
-    assert cost_i < 0.015
+    assert cost_i[0] < 0.015
 
 def test_gradient_updates_Adam():
     # Find minimum of a parabola
