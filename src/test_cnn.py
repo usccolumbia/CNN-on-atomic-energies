@@ -3,6 +3,58 @@ import theano.tensor as T
 import numpy as np
 import cnn
 
+def test_fullyConnectedLayer(Npoints,Nnodes,Nsteps,learning_rate):
+    '''
+    Test that the fully connected layer works. This trains sine function 
+    for a FCNN with one hidden layer of 4 units. For visualization check test.py.
+    NOTE: Activations are done out of FC layer, since for atomic calculations
+          linear activation is used.
+    '''
+    pi=3.14159265358
+
+    xtrain=np.linspace(0,7,300)
+    ytrain=np.sin(xtrain)
+
+    Xtrain=np.zeros((300,1))
+    for i in range(300):
+        Xtrain[i]=xtrain[i]
+
+    Ytrain=np.sin(Xtrain)
+
+
+    rng = np.random.RandomState(23455)
+
+    x=T.matrix('x')
+    y=T.matrix('y')
+
+    [hout, params_1] = cnn.fullyConnectedLayer(
+        rng=rng,
+        data_input=x,
+        num_in=1,
+        num_out=4)
+
+    [y_pred_lin, params_2] = cnn.fullyConnectedLayer(
+        rng=rng,
+        data_input=T.tanh(hout),
+        num_in=4,
+        num_out=1)
+    y_pred=T.tanh(y_pred_lin)
+
+    cost=cnn.MSE(y,y_pred)
+
+    params = params_1 + params_2
+
+    updates = cnn.gradient_updates_Adam(cost,params,0.05)
+
+    train = theano.function(
+        inputs=[x,y],
+        outputs=[cost],
+        updates=updates)
+    
+    for i in range(2000):
+        cost_i=train(Xtrain,Ytrain)
+    assert cost_i < 0.015
+
 def test_gradient_updates_Adam():
     # Find minimum of a parabola
     x = T.matrix('x')
