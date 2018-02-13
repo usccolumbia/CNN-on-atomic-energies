@@ -2,3 +2,4 @@
 *~
 venv/
 .cache/
+src/mnist.pkl.gz
