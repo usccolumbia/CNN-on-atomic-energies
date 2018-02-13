@@ -24,18 +24,16 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
         indices = rd.sample(range(0, data_y.shape[0]), sample_size)
     except ValueError:
         print('Sample size exceeds data size.')
-    x = np.zeros((sample_size,6400))
-    x = data_x[indices, :]
-    y = np.zeros((sample_size,1))
-    y = data_y[indices,:]
+    data_x = data_x[indices, :]
+    data_y = data_y[indices]
     
-    shared_x = theano.shared(np.asarray(x,
+    shared_x = theano.shared(np.asarray(data_x,
                                         dtype=theano.config.floatX),
                              borrow=borrow)
-    shared_y = theano.shared(np.asarray(y,
+    shared_y = theano.shared(np.asarray(data_y,
                                         dtype=theano.config.floatX),
                              borrow=borrow)
-    return shared_x, shared_y, (x, y)
+    return shared_x, T.cast(shared_y,'int32'), (data_x, data_y)
 
 def shared_testset(data_x, sample_size=600, borrow=True):
     rd.seed(23455)
