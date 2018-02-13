@@ -5,7 +5,7 @@ import random as rd
 from theano.tensor.signal import pool
 from theano.tensor.nnet import conv2d
 #import matplotlib.pyplot as plt
-print('***** Import complete *****')
+
 
 def gradient_updates_Adam(cost, params, learning_rate):
     # Function to return an update list for the parameters to be updated
@@ -48,7 +48,7 @@ def pooling(input_pool, size):
     #            dimensions: (# of channels, conv_output_height/#rows,
     #                         conv_output_width/#rows)
     
-    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=False,mode='sum')
+    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=True)
     return pool_out
 
 def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
@@ -77,7 +77,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     #n=filter_spec[0]*image_spec[2]*image_spec[3]/2
     #w_bound=np.sqrt(6./(m+n))
     W = theano.shared(
-        np.asarray(rng.normal(0, 0.01, size=filter_spec)),
+        np.asarray(rng.normal(0, 0.1, size=filter_spec)),
         borrow=True)
     # Bias is a 1 D tensor -- one bias per output feature map.
     # Initialised with zeros.
