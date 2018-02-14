@@ -1,0 +1,22 @@
+# Datapath
+datapath               : /wrk/krsimula/DONOTREMOVE/NEURAL_NETWORKS/CNN-on-atomic-energies/
+# Number of datapoints
+Ndata                  :  2400
+# Number of aug points
+Naug                   :  2400
+# Training set size
+Ntrain                 :  4000
+# Validation set size
+Nval                   :  800
+# Learning_rate
+learning_rate          :  0.05
+# Number of epochs
+Nepoch                 :  10
+# Minibatch size
+mbs                    :  20
+# Number of channels
+Nchannel               :  8 8 8
+# Regularization
+reg                    :  0.001
+
+ 
