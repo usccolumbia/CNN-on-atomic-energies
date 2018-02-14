@@ -9,6 +9,20 @@ import matplotlib.pyplot as plt
 import cnn
 import load_data
 
+def test_MSE():
+    A=np.zeros((2,1))
+    B=np.zeros((2,1))
+    A[0,0]=1
+    A[1,0]=1
+
+    y,y_pred,yy=load_data.shared_dataset(A,B,sample_size=2)
+    cost=cnn.MSE(y,y_pred)
+#    assert (cost < 1.0001)
+#    assert (cost > 0.9999)
+    print(cost.eval())
+
+test_MSE()
+
 def negative_log_lik(y, p_y_given_x):
     # Function to compute the cost that is to be minimised. 
     # Here, we compute the negative log-likelihood.
@@ -100,18 +114,22 @@ def visualize_MISTtraining():
     
     # Load data into tensors
     train_size = 6000
-    test_set_x, test_set_y, test_set = load_data.shared_dataset(
+    test_set_x, test_set_y_float, test_set = load_data.shared_dataset(
         test_x,test_y,
         sample_size=train_size//3
         )
-    valid_set_x, valid_set_y, valid_set = load_data.shared_dataset(
+    valid_set_x, valid_set_y_float, valid_set = load_data.shared_dataset(
         valid_x,valid_y,
         sample_size=train_size//3
         )
-    train_set_x, train_set_y, train_set = load_data.shared_dataset(
+    train_set_x, train_set_y_float, train_set = load_data.shared_dataset(
         train_x,train_y,
         sample_size=train_size
         )
+
+    train_set_y=T.cast(train_set_y_float,'int32')
+    valid_set_y=T.cast(valid_set_y_float,'int32')
+    test_set_y=T.cast(test_set_y_float,'int32')
     
     # Training set dimension: 6000 x 784
     print('Training set: %d samples'
@@ -311,7 +329,7 @@ def visualize_MISTtraining():
     ax2.plot(valid_accuracy)
     plt.show()
 
-visualize_MISTtraining()
+##visualize_MISTtraining()
     
 def visualize_sinetraining(Npoints,Nnodes,Nsteps,learning_rate):
     
