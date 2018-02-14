@@ -270,7 +270,7 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,test_set_x,learning
                     for j in range(mini_batch_size):
                         E[step,0]=buf[j]
                         step=step+1
-                np.savetxt('test/E_pred_'+str(iter)+'.txt',E)
+                np.savetxt('output/E_pred_'+str(iter)+'.txt',E)
 
     # Predict energies for test set
     E_test = np.zeros((n_test_batches*mini_batch_size,1))
