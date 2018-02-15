@@ -17,47 +17,24 @@ rd.seed()
 # Read input file
 print("Reading input data...\n")
 hyppar.setInput()
-print("Done.")
 
+# Set up neural network structure
+print("\n Setting up CNN structure...")
+hyppar.setStructureParameters()
+
+
+print(hyppar.Nchannel[9])
 # Read raw data
 print("Reading raw data...")
 datapar.loadRawData()
-print("Done.")
-
 
 # Handle dataset
 print("Loading dataset...")
 datapar.loadDataPoints()
-print("Done.")
 
-######### Split data into training and validation sets #########
-Xtrain=np.zeros((hyppar.Ntrain,6400))
-Ytrain=np.zeros((hyppar.Ntrain,1))
-Xval=np.zeros((hyppar.Nval,6400))
-Yval=np.zeros((hyppar.Nval,1))
-Xtest=np.zeros((600,6400))
-for i in range(hyppar.Nval):
-    Xval[i,:]=datapar.Xdata[i,:,:].flatten(0)
-    Yval[i,0]=datapar.Ydata[i,0]
-for i in range(hyppar.Ntrain):
-    ind=hyppar.Nval+i
-    Xtrain[i,:]=datapar.Xdata[ind,:,:].flatten(0)
-    Ytrain[i,0]=datapar.Ydata[ind,0]
-for i in range(600):
-    X=np.loadtxt(hyppar.datapath+'CM/test/'+str(i+1))
-    Xtest[i,:]=X.flatten(0)
-################################################################
-
-
-###### Turn data into theano shared variables ##################
-valid_set_x, valid_set_y, valid_set = load_data.shared_dataset(
-    Xval, Yval,
-    sample_size=hyppar.Nval)
-train_set_x, train_set_y, train_set = load_data.shared_dataset(
-    Xtrain, Ytrain,
-    sample_size=hyppar.Ntrain)
-test_set_x = load_data.shared_testset(Xtest) 
-###############################################################
+# Define training, validation and test sets
+print("Splitting dataset...")
+datapar.splitDataset()
 
 dir='output'
 np.savetxt(dir+'/E_target.txt',Yval)
