@@ -1,3 +1,4 @@
+################ Dataset info ######################
 # Datapath
 datapath               : /wrk/krsimula/DONOTREMOVE/NEURAL_NETWORKS/CNN-on-atomic-energies/
 # Number of datapoints
@@ -8,15 +9,49 @@ Naug                   :  2400
 Ntrain                 :  4000
 # Validation set size
 Nval                   :  800
+###################################################
+
+
+
+################ Optimization #####################
 # Learning_rate
 learning_rate          :  0.05
 # Number of epochs
 Nepoch                 :  10
 # Minibatch size
 mbs                    :  20
+####################################################
+
+
+
+################ Structure of CNN ##################
+# 2D input (Later: give as list)
+in_x                   :  80
+in_y                   :  80
+# Number of convolutional layers
+NCL                    :  3
 # Number of channels
 Nchannel               :  8 8 8
-# Regularization
+# Filters
+filter1                : 9 9
+Filter2                : 5 5
+filter3                : 5 5
+# Pooling
+pool1                  : 2 2
+pool2                  : 2 2
+pool3                  : 2 2
+# Activations  
+activation1            : tanh
+activation2            : tanh
+activation3            : tanh
+# Number of fully connected layers
+NFC                    : 1
+# Activations
+fc_activation           : lin 
+######################################################
+
+
+################ Regularization #######################
 reg                    :  0.001
 
  
