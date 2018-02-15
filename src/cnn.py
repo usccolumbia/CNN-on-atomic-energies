@@ -35,7 +35,7 @@ def gradient_updates_Adam(cost, params, learning_rate):
     updates.append((t, t + 1))
     return updates
 
-def pooling(input_pool, size):
+def pooling(input_pool, size, ignore_border=False):
     # Function to perform Max-Pooling on each feature map
     
     # Inputs:
@@ -48,7 +48,7 @@ def pooling(input_pool, size):
     #            dimensions: (# of channels, conv_output_height/#rows,
     #                         conv_output_width/#rows)
     
-    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=True)
+    pool_out = pool.pool_2d(input=input_pool, ws=size, ignore_border=ignore_border)
     return pool_out
 
 def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
