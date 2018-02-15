@@ -4,8 +4,28 @@ import numpy as np
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 import matplotlib.pyplot as plt
 import cnn
+import hyppar
+import datapar
+import load_data
 
-def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,test_set_x,learning_rate,num_epochs,num_filters,mini_batch_size,reg):
+def TrainCNN():
+    
+    # Training, validation and test data
+    valid_set_x, valid_set_y, valid_set = load_data.shared_dataset(
+        datapar.Xval, datapar.Yval,
+        sample_size=hyppar.Nval)
+    train_set_x, train_set_y, train_set = load_data.shared_dataset(
+        datapar.Xtrain, datapar.Ytrain,
+        sample_size=hyppar.Ntrain)
+    test_set_x = load_data.shared_testset(datapar.Xtest)
+
+    # Hyperparameters
+    learning_rate   = hyppar.learning_rate
+    num_epochs      = hyppar.Nepoch
+    num_filters     = hyppar.Nchannel
+    mini_batch_size = hyppar.mbs
+    reg             = hyppar.reg
+
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
     
@@ -59,27 +79,11 @@ def TrainCNN(train_set_x,train_set_y,valid_set_x,valid_set_y,test_set_x,learning
         pool_size=( 2,2),
         activation=T.nnet.elu)
 
-    #[layer3_output, layer3_params] = cnn.convLayer(
-    #    rng,
-    #    data_input=layer2_output,
-    #    image_spec=(mini_batch_size, num_filters[2], 6, 6),
-    #    filter_spec=(num_filters[3], num_filters[2], 3, 3),
-    #    pool_size=( 2,2),
-    #    activation=T.tanh)
-
-
     # Flatten the output into dimensions:
     # mini_batch_size x 432
     fc_layer_input = layer2_output.flatten(2)
 
     # The fully connected layer operates on a matrix of
-    # dimensions: mini_batch_size x 1098# It clasifies the values using the softmax function.
-    #[fc1_layer_output, fc1_layer_params] = cnn.fullyConnectedLayer(
-    #    rng=rng,
-    #    data_input=fc_layer_input,
-    #    num_in=num_filters[3]*2*2,
-    #    num_out=10)
-
     [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=fc_layer_input,
