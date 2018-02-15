@@ -3,8 +3,56 @@ import hyppar
 import load_data
 import random as rd
 
-def loadDataPoints():
+def splitDataset():
+    '''
+    Splits dataset into training and validation sets based on earlier
+    defined variables Ntrain and Nval. Currently test set is included
+    separately.
+    '''
+    # New variables:
+    # Training set
+    global Xtrain
+    # Training set labels
+    global Ytrain
+    # Validation set
+    global Xval
+    # Validation set labels
+    global Yval
+    # Test set: Only features
+    global Xtest
 
+    # Use: from module hyppar
+    Ntrain=hyppar.Ntrain
+    Nval=hyppar.Nval
+    datapath=hyppar.datapath
+    
+    # Use: local module
+    global Xdata
+    global Ydata
+
+    Xtrain=np.zeros((Ntrain,6400))
+    Ytrain=np.zeros((Ntrain,1))
+    Xval=np.zeros((Nval,6400))
+    Yval=np.zeros((Nval,1))
+    Xtest=np.zeros((600,6400))
+    for i in range(Nval):
+        Xval[i,:]=Xdata[i,:,:].flatten(0)
+        Yval[i,0]=Ydata[i,0]
+    for i in range(Ntrain):
+        ind=Nval+i
+        Xtrain[i,:]=Xdata[ind,:,:].flatten(0)
+        Ytrain[i,0]=Ydata[ind,0]
+    for i in range(600):
+        X=np.loadtxt(datapath+'CM/test/'+str(i+1))
+        Xtest[i,:]=X.flatten(0)
+
+
+
+def loadDataPoints():
+    '''
+    Loads feature vectors as lists of Coulomb matrices and
+    labels as a N x 1 matrix of formation (or band gap) energies.
+    '''
     rd.seed()
     # Dataset features
     global Xdata
