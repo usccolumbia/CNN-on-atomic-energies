@@ -70,12 +70,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     # output - tensor containing activations fed into next layer.
     # params - list containing layer parameters
     
-    # Creating a shared variable for weights that are initialised with samples
-    # drawn from a gaussian distribution with 0 mean and standard deviation of
-    # 0.1. This is just a random initialisation.
-    #m=filter_spec[1]*filter_spec[2]*filter_spec[3]
-    #n=filter_spec[0]*image_spec[2]*image_spec[3]/2
-    #w_bound=np.sqrt(6./(m+n))
+    # Weigths
     W = theano.shared(
         np.asarray(rng.normal(0, 0.1, size=filter_spec)),
         borrow=True)
@@ -85,9 +80,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     
     # Convolve input with specifications. This is Theano's convolution
     # function. It takes as input the data tensor, filter weights, filter
-    # specifications and the image specifications. In our example, the
-    # dimensions of the output of this operation would be:
-    # mini_batch_size x 20 x 80 x 80
+    # specifications and the image specifications. 
     
     conv_op_out = conv2d(
         input=data_input,
@@ -98,17 +91,9 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     # Add the bias term and use the specified activation function/
     # non-linearity.
     # b.dimshuffle returns a view of the bias tensor with permuted dimensions.
-    # In this case our bias tensor is originally of the dimension 9 x 1. The
-    # dimshuffle operation used below, broadcasts this into a tensor of
-    # 1 x 9 x 1 x 1. Note that there is one bias per output feature map.
     layer_activation = activation(conv_op_out + b.dimshuffle('x', 0, 'x', 'x'))
     
-    # Perform pooling on the activations. It is required to reduce the spatial
-    # size of the representation to reduce the number of parameters and
-    # computation in the network. Hence, it helps to control overfitting
-    # Output dimensions: (# channels, image height-filter height+1,
-    #                     image width - filter width+1)
-    # In our demo, the dimensions would be of mini_batch_size x 9 x 12 x 12
+    # Perform pooling on the activations.
     output = pooling(input_pool=layer_activation, size=pool_size)
     
     # Combine the weights and biases into a single list
