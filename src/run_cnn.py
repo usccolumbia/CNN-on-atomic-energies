@@ -7,6 +7,130 @@ import cnn
 import hyppar
 import datapar
 import load_data
+import statistics
+
+def CNNStructure(layer_0_input,mini_batch_size,rng):
+    
+    # Use: hyppar module
+    in_x=hyppar.in_x
+    in_y=hyppar.in_y
+    Nchannel=hyppar.Nchannel
+    NCL=hyppar.NCL
+    NFC=hyppar.NFC
+    filter1=hyppar.filter1
+    filter2=hyppar.filter2
+    filter3=hyppar.filter3
+    pool1=hyppar.pool1
+    pool2=hyppar.pool2
+    pool3=hyppar.pool3
+    image_spec_2_x=hyppar.image_spec_2_x
+    image_spec_2_y=hyppar.image_spec_2_y
+    if NCL>1:
+        image_spec_3_x=hyppar.image_spec_3_x
+        image_spec_3_y=hyppar.image_spec_3_y
+    fc_in_x=hyppar.fc_in_x
+    fc_in_y=hyppar.fc_in_y
+    
+
+    
+    if (hyppar.activation1=="tanh"):
+        activation1=T.tanh
+    elif (hyppar.activation1=="relu"):
+        activation1=T.nnet.relu
+    elif (hyppar.activation1=="elu"):
+        activation1=T.nnet.elu
+    elif (hyppar.activation1=="sigmoid"):
+        activation1=T.nnet.sigmoid
+    else :
+        print("1: UNKNOWN ACTIVATION!!!!!!!!")
+
+    if (hyppar.activation2=="tanh"):
+        activation2=T.tanh
+    elif (hyppar.activation2=="relu"):
+        activation2=T.nnet.relu
+    elif (hyppar.activation2=="elu"):
+        activation2=T.nnet.elu
+    elif (hyppar.activation2=="sigmoid"):
+        activation2=T.nnet.sigmoid
+    else :
+        print("2: UNKNOWN ACTIVATION!!!!!!!!")
+
+    if (hyppar.activation3=="tanh"):
+        activation3=T.tanh
+    elif (hyppar.activation3=="relu"):
+        activation3=T.nnet.relu
+    elif (hyppar.activation3=="elu"):
+        activation3=T.nnet.elu
+    elif (hyppar.activation3=="sigmoid"):
+        activation3=T.nnet.sigmoid
+    else :
+
+        print("3: UNKNOWN ACTIVATION!!!!!!!!")
+
+    # THIS IS NOT YET IMPLEMENTED TO FCL
+    if (hyppar.fc_activation=="tanh"):
+        fc_activation=T.tanh
+    elif (hyppar.fc_activation=="relu"):
+        fc_activation=T.nnet.relu
+    elif (hyppar.fc_activation=="elu"):
+        fc_activation=T.nnet.elu
+    elif (hyppar.fc_activation=="sigmoid"):
+        fc_activation=T.nnet.sigmoid
+    else :
+        print("FC: UNKNOWN ACTIVATION!!!!!!!!")
+
+    # First convolution and pooling layer                                                                        
+    [layer0_output, layer0_params] = cnn.convLayer(
+        rng,
+        data_input=layer_0_input,
+        image_spec=(mini_batch_size, 1, in_x, in_y),
+        filter_spec=(Nchannel[0], 1, filter1[0], filter1[1]),
+        pool_size=(pool1[0],pool1[1]),
+        activation=activation1)
+
+    # Second convolution and pooling layer                                                                       
+    if (NCL>1):
+        [layer1_output, layer1_params] = cnn.convLayer(
+            rng,
+            data_input=layer0_output,
+            image_spec=(mini_batch_size, Nchannel[0], image_spec_2_x, image_spec_2_y),
+            filter_spec=(Nchannel[1],Nchannel[0],filter2[0],filter2[1]),
+            pool_size=(pool2[0],pool2[1]),
+            activation=activation2)
+    if (NCL>2):
+        [layer2_output, layer2_params] = cnn.convLayer(
+            rng,
+            data_input=layer1_output,
+            image_spec=(mini_batch_size, Nchannel[1], image_spec_3_x, image_spec_3_y),
+            filter_spec=(Nchannel[2],Nchannel[1],filter3[0],filter3[1]),
+            pool_size=(pool3[0],pool3[1]),
+            activation=activation3)
+
+    if (NCL==1):
+        fc_layer_input = layer0_output.flatten(2)
+    elif(NCL==2):
+        fc_layer_input = layer1_output.flatten(2)
+    elif(NCL==3):
+        fc_layer_input = layer2_output.flatten(2)
+    
+
+    # The fully connected layer operates on a matrix of                                                          
+    [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
+        rng=rng,
+        data_input=fc_layer_input,
+        num_in=Nchannel[NCL-1]*fc_in_x*fc_in_y,
+        num_out=1)
+
+    if (NCL==1):
+        cn_output = layer0_output
+    elif(NCL==2):
+        cn_output = layer0_output + layer1_output
+    elif(NCL==3):
+        cn_output = [layer0_output] + [layer1_output] + [layer2_output]
+    params = layer0_params + layer1_params + layer2_params + fc_layer_params
+    
+    return E_pred, cn_output, params
+    
 
 def TrainCNN():
     
@@ -53,55 +177,15 @@ def TrainCNN():
     # 4-D tensor of dimensions: mini_batch_size x 1 x 80 x 80
     layer0_input = x.reshape((mini_batch_size,1,80,80))
 
-    # First convolution and pooling layer
-    [layer0_output, layer0_params] = cnn.convLayer(
-        rng,
-        data_input=layer0_input,
-        image_spec=(mini_batch_size, 1, 80, 80),
-        filter_spec=(num_filters[0], 1, 9, 9),
-        pool_size=(2,2),
-        activation=T.nnet.relu)
-
-    # Second convolution and pooling layer
-    [layer1_output, layer1_params] = cnn.convLayer(
-        rng,
-        data_input=layer0_output,
-        image_spec=(mini_batch_size, num_filters[0], 36, 36),
-        filter_spec=(num_filters[1],num_filters[0],5,5),
-        pool_size=(2,2),
-        activation=T.nnet.elu)
-    
-    [layer2_output, layer2_params] = cnn.convLayer(
-        rng,
-        data_input=layer1_output,
-        image_spec=(mini_batch_size, num_filters[1], 16, 16),
-        filter_spec=(num_filters[2], num_filters[1], 5, 5),
-        pool_size=( 2,2),
-        activation=T.nnet.elu)
-
-    # Flatten the output into dimensions:
-    # mini_batch_size x 432
-    fc_layer_input = layer2_output.flatten(2)
-
-    # The fully connected layer operates on a matrix of
-    [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
-        rng=rng,
-        data_input=fc_layer_input,
-        num_in=num_filters[2]*6*6,
-        num_out=1)
+    # Define the CNN function
+    E_pred,cn_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
     
     # Cost that is minimised during stochastic descent. Includes regularization
     cost = cnn.MSE(y,E_pred)
-    # Cost to be evaluated at kaggle, checked at validation
-    #cost_val = cnn.RMSLE(y,E_pred)
-    #
 
-    L2_reg=T.mean(T.sqr(layer0_params[0]))
-    L2_reg=L2_reg+T.mean(T.sqr(layer1_params[0]))
-    L2_reg=L2_reg+T.mean(T.sqr(layer2_params[0]))
-    L2_reg=L2_reg+T.mean(T.sqr(fc_layer_params[0]))
-#    L2_reg=L2_reg+T.sum(T.sqr(layer2_params[0]))/(num_filters[1]*num_filters[0]*2*3)
-#    L2_reg=L2_reg+T.sum(T.sqr(layer2_params[1])/num_filters[2])
+    L2_reg=0
+    for i in range(len(params)):
+        L2_reg=L2_reg+T.mean(T.sqr(params[i][0]))
 
     cost=cost+reg*L2_reg
     
@@ -150,9 +234,6 @@ def TrainCNN():
     
     
 
-    # List of parameters to be fit during training
-    params = fc_layer_params + layer0_params + layer1_params + layer2_params#+ fc2_layer_params + layer3_params
-    
     # Creates a function that updates the model parameters by SGD.
     # The updates list is created by looping over all
     # (params[i], grads[i]) pairs.
@@ -183,42 +264,9 @@ def TrainCNN():
     train_error = []
     valid_error= []
 
-    # Get convolution and fully connected layer weights as numpy arrays
-    w0_conv = layer0_params[0].get_value()
-    w1_conv = layer1_params[0].get_value()
-    w2_conv = layer2_params[0].get_value()      
-    w_fc1 = fc_layer_params[0].get_value()
-    #w_fc2 = fc2_layer_params[0].get_value()
+    statistics.saveParameters(params)
 
-    # Save weights from only the bottom layer of the filter
-    w0_conv = np.array(w0_conv[:, 0])
-    w1_conv = np.array(w1_conv[:, 0])
-    w2_conv = np.array(w2_conv[:, 0])
-    
-    # Create buffer arrays for the channel and fully connected
-    # layer weights. From all channels, three somewhat arbitrary
-    # weights are gathred.
-    w0_arr1 = np.array([w0_conv[:, 1, 1]]);
-    w0_arr2 = np.array([w0_conv[:, 2, 2]]);
-    w0_arr3 = np.array([w0_conv[:, 3, 3]])
-
-    w1_arr1 = np.array([w1_conv[:, 1, 1]]);
-    w1_arr2 = np.array([w1_conv[:, 2, 2]]);
-    w1_arr3 = np.array([w1_conv[:, 3, 3]])
-    
-    w2_arr1 = np.array([w2_conv[:, 1, 1]]);
-    w2_arr2 = np.array([w2_conv[:, 2, 2]]);
-
-    wfc1_arr1 = np.array([w_fc1[0]])
-    wfc1_arr2 = np.array([w_fc1[1]])
-    wfc1_arr3 = np.array([w_fc1[2]])
-
-    #wfc2_arr1 = np.array([w_fc2[0]])
-    #wfc2_arr2 = np.array([w_fc2[1]])
-    #wfc2_arr3 = np.array([w_fc2[2]])
-            
-    
-    # This is where we call the previously defined Theano functions.
+     # This is where we call the previously defined Theano functions.
     print('***** Training model *****')
     while (epoch < num_epochs):
         epoch = epoch + 1
@@ -231,6 +279,12 @@ def TrainCNN():
             # Obtain the cost of each minibatch specified using the
             # minibatch_index.
             cost_ij = train_model(minibatch_index)
+            
+            if iter%10==0:
+                statistics.saveParameters(params)
+            if iter%2==0:
+                statistics.saveActivations(cn_output)
+            
             # Save training error
             train_error.append(float(cost_ij))
             
@@ -242,29 +296,6 @@ def TrainCNN():
 
             print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training error: "+str(cost_ij)+", validation error: "+str(valid_score))
             
-            # Obtain the weights for visualisation
-            w0_conv = layer0_params[0].get_value()
-            wt0 = np.array(w0_conv[:, 0])
-            w0_arr1 = np.append(w0_arr1, [wt0[:, 1, 1]], axis=0)
-            w0_arr2 = np.append(w0_arr2, [wt0[:, 2, 2]], axis=0)
-            w0_arr3 = np.append(w0_arr3, [wt0[:, 3, 3]], axis=0)
-            
-            w1_conv = layer1_params[0].get_value()
-            wt1 = np.array(w1_conv[:, 0])
-            w1_arr1 = np.append(w1_arr1, [wt1[:, 1, 1]], axis=0)
-            w1_arr2 = np.append(w1_arr2, [wt1[:, 2, 2]], axis=0)
-            w1_arr3 = np.append(w1_arr3, [wt1[:, 3, 3]], axis=0)
-            
-            w2_conv = layer2_params[0].get_value()
-            wt2 = np.array(w2_conv[:, 0])
-            w2_arr1 = np.append(w2_arr1, [wt2[:, 1, 1]], axis=0)
-            w2_arr2 = np.append(w2_arr2, [wt2[:, 2, 2]], axis=0)
-
-            w_fc1 = fc_layer_params[0].get_value()
-            wfc1_arr1 = np.append(wfc1_arr1, [w_fc1[0]], axis=0)
-            wfc1_arr2 = np.append(wfc1_arr2, [w_fc1[1]], axis=0)
-            wfc1_arr3 = np.append(wfc1_arr3, [w_fc1[2]], axis=0)
-
             if (iter%20==0):
                 # Get predicted energies from validation set
                 E = np.zeros((n_valid_batches*mini_batch_size,1))
@@ -284,11 +315,10 @@ def TrainCNN():
         for j in range(mini_batch_size):
             E_test[step,0]=buf[j]
             step=step+1
+
+    statistics.writeActivations()
     # Return values:
-    # * train_error <list of floats>
-    # * valid_error <list of floats>
-    # * w1          <np.array((#iterations,#channels@layer1))>
-    # * w2
-    # * w3
-    # * wfc         <np.array((#iterations,1))>
-    return train_error, valid_error, w0_arr1,w0_arr2,w0_arr3,w1_arr1,w1_arr2,w1_arr3,w2_arr1,w2_arr2,wfc1_arr1,wfc1_arr2,wfc1_arr3,E_test#wfc2_arr1,wfc2_arr2,wfc2_arr3
+    statistics.saveParameters(params)
+    statistics.writeParameters()
+
+ 

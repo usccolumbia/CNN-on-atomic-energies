@@ -234,7 +234,6 @@ def get_geometry(Ntrain,datapath):
     * elements  : <list of list of str values>      , elements of all the atoms
     * lattices  : <list of list of np.array((3,3))> , all lattice coordinates 
     '''
-    
     xyz_train = []
     elements  = []
     lattices  = []
