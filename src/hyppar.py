@@ -15,8 +15,6 @@ learning_rate = 0.05
 Nepoch = 10
 # Minibatch size
 mbs = 20
-# Number of channels
-Nchannel = [8, 8, 8]
 # Regularization
 reg = 0.001
 
