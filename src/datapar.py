@@ -123,8 +123,6 @@ def loadRawData():
     global lattices_Train
 
     filename = hyppar.datapath+'data/train.csv'
-    
     spacegrp,Natoms,pc_al,pc_ga,pc_in,lv_alpha,lv_beta,lv_gamma,lvadeg,lvbdeg,lvgdeg,Ef,Eg = load_data.get_train_data(filename)
-
     xyz_Train,elements_Train,lattices_Train=load_data.get_geometry(hyppar.Ndata,hyppar.datapath+'data')
 
