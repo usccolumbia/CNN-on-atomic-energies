@@ -5,113 +5,118 @@ import hyppar
 
 # Weights  and biases of 3 convlayers and on FC layer,
 # to be saved during training
-w1=[]
-w2=[]
-w3=[]
-wf=[]
-b1=[]
-b2=[]
-b3=[]
-bf=[]
+w=[]
+b=[]
+
 
 # Activations of the convlayers, to be saved during training
-cl1_out = []
-cl2_out = []
-cl3_out = []
+conv_out = []
+
 
 def writeParameters(dir="output"):
-    global w1
-    global b1
-    global w2
-    global b2
-    global w3
-    global b3
-    global wf
-    global bf
+    global w
+    global b
 
-    ww1=np.zeros((len(w1),w1[0].shape[0],w1[0].shape[1],w1[0].shape[2],w1[0].shape[3]))
-    ww2=np.zeros((len(w1),w2[0].shape[0],w2[0].shape[1],w2[0].shape[2],w2[0].shape[3]))
-    ww3=np.zeros((len(w1),w3[0].shape[0],w3[0].shape[1],w3[0].shape[2],w2[0].shape[3]))
-    wwf=np.zeros((len(w1),wf[0].shape[0],wf[0].shape[1]))
-    for i in range(len(w1)):
-        ww1[i,:,:,:]=w1[i]
-        ww2[i,:,:,:]=w2[i]
-        ww3[i,:,:,:]=w3[i]
-        wwf[i]=wf[i]
+    # Use: hyppar module
+    Nl           = hyppar.NCL
+    Nc           = hyppar.Nchannel
+    filter       = hyppar.filter
+    image_spec_x = hyppar.image_spec_x
+    image_spec_y = hyppar.image_spec_y
+
+    # Derived variables
+    Niter   = len(w)
+    
+    for i in range(Nl):
+        wim = np.zeros((Niter,Nc[i+1],Nc[i],filter[i][0],filter[i][1]))
+        bim = np.zeros((Niter,Nc[i+1]))
+        for j in range(Niter):
+            wim[i,:,:,:,:] = w[j][i]
+            bim[i,:]       = b[j][i]
+        np.save(dir+'/weights_convlayer_'+str(i),wim)
+        np.save(dir+'/biases_convlayer_'+str(i),bim)
         
-    print(ww1.shape)
-    np.save(dir+'/weights_convlayer1',ww1)
-    np.save(dir+'/weights_convlayer2',ww2)
-    np.save(dir+'/weights_convlayer3',ww3)
-    np.save(dir+'/weights_FCC',wwf)
+    wfim = np.zeros((Niter,Nc[-1]*image_spec_x[-1]*image_spec_y[-1],1))
+    bfim = np.zeros((Niter))
+    for i in range(Niter):
+        wfim[i,:,:] = w[i][-1]
+        bfim[i] = b[i][-1]
+
+    np.save(dir+'/weights_FClayer_'+str(i),wfim)
+    np.save(dir+'/biases_FClayer_'+str(i),bfim)
+
+        
 
 def writeActivations(dir="output"):
-    global cl1_out
-    global cl2_out
-    global cl3_out
+    global conv_out
 
+    # Use: hyppar module
+    Nl           = hyppar.NCL
+    Nc           = hyppar.Nchannel
+    image_spec_x = hyppar.image_spec_x
+    image_spec_y = hyppar.image_spec_y
+
+    # Derived variables
+    Niter   = len(conv_out)
+    Nsample = len(conv_out[0])
     
-    print(cl1_out[0])
-
-    ac1=np.zeros((len(cl1_out),cl1_out[0].shape[0],cl1_out[0].shape[1],cl1_out[0].shape[2]))
-    ac2=np.zeros((len(cl1_out),cl2_out[0].shape[0],cl2_out[0].shape[1],cl2_out[0].shape[2]))
-    ac3=np.zeros((len(cl1_out),cl3_out[0].shape[0],cl3_out[0].shape[1],cl3_out[0].shape[2]))
-    for i in range(len(cl1_out)):
-        ac1[i]=cl1_out[i]
-        ac2[i]=cl2_out[i]
-        ac3[i]=cl3_out[i]
-    np.save(dir+"activations_convlayer1",ac1)
-    np.save(dir+"activations_convlayer2",ac2)
-    np.save(dir+"activations_convlayer3",ac3)
-
-def saveActivations(cn_output):
+    for i in range(Nl):
+        for j in range(Nsample):
+            image = np.zeros((Niter,Nc[i+1],image_spec_x[i+1], image_spec_y[i+1]))
+            for k in range(Niter):
+                image[k,:,:,:] = conv_out[k][j][i] 
+            np.save(dir+'/activations_layer'+str(i)+'_sample'+str(j),image)
+        
+        
+def saveActivations(activations):
     '''
     Completely saves the current activation tensors of
-    the convolutional layers.
+    the convolutional layers from 2 random input samples.
+
+    Data structure for saved activations:
+    conv_out   : #iter x [#samples x [#Layers x #channels x xdim x ydim]]
+   
+    Example: 
+    iter i, sample s, layer l has a numpy entry obtained by
+    conv_out[i][s][l] := Nlayers X xdim X ydim
     '''
-    global cl1_out
-    global cl2_out
-    global cl3_out
+    global conv_out
 
-    activation1=np.array(cn_output[0][0,:])
-    activation2=np.array(cn_output[1][0,:])
-    activation3=np.array(cn_output[2][0,:])
+    iter=[] # Conv_out elements
 
-    print(activation1)
+    sample1=[] # iter elements
+    sample2=[]
 
-    cl1_out.append(activation1)
-    cl2_out.append(activation2)
-    cl3_out.append(activation3)
+    for i in range(len(activations)):
+        A1=np.array(activations[i][0]) # layer i, sample 1
+        A2=np.array(activations[i][1]) # layer i, sample 2
+        sample1.append(A1)
+        sample2.append(A2)#
+
+    iter.append(sample1)
+    iter.append(sample2)
+    
+    conv_out.append(iter)
+    
+    
 
 def saveParameters(params):
     ''' 
     Takes a snapshot of all of the current weights and biases
     '''
-    global w1 
-    global b1
-    global w2
-    global b2
-    global w3
-    global b3
-    global wf
-    global bf
+    global w 
+    global b
 
+
+    snapw = []
+    snapb = []
     for i in range(len(params)):
-        if i==0:
-            w1.append(params[i].get_value())
-        elif i==1:
-            b1.append(params[i].get_value())
-        elif i==2:
-            w2.append(params[i].get_value())
-        elif i==3:
-            b2.append(params[i].get_value())
-        elif i==4:
-            w3.append(params[i].get_value())
-        elif i==5:
-            b3.append(params[i].get_value())
-        elif i==6:
-            wf.append(params[i].get_value())
-        elif i==7:
-            bf.append(params[i].get_value())
+        if (i%2==0):
+            snapw.append(params[i].get_value())
+        else:
+            snapb.append(params[i].get_value())
+
+    w.append(snapw)
+    b.append(snapb)
 
     
