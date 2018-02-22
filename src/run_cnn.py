@@ -3,69 +3,37 @@ import theano.tensor as T
 import numpy as np
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 import matplotlib.pyplot as plt
+import random as rd
 import cnn
 import hyppar
 import datapar
 import load_data
 import statistics
 
-def CNNStructure(layer_0_input,mini_batch_size,rng):
+def CNNStructure(input,mini_batch_size,rng):
     
     # Use: hyppar module
-    in_x=hyppar.in_x
-    in_y=hyppar.in_y
-    Nchannel=hyppar.Nchannel
-    NCL=hyppar.NCL
-    NFC=hyppar.NFC
-    filter1=hyppar.filter1
-    filter2=hyppar.filter2
-    filter3=hyppar.filter3
-    pool1=hyppar.pool1
-    pool2=hyppar.pool2
-    pool3=hyppar.pool3
-    image_spec_2_x=hyppar.image_spec_2_x
-    image_spec_2_y=hyppar.image_spec_2_y
-    if NCL>1:
-        image_spec_3_x=hyppar.image_spec_3_x
-        image_spec_3_y=hyppar.image_spec_3_y
-    fc_in_x=hyppar.fc_in_x
-    fc_in_y=hyppar.fc_in_y
-    
+    Nchannel     = hyppar.Nchannel
+    NCL          = hyppar.NCL
+    NFC          = hyppar.NFC
+    pool         = hyppar.pool
+    filter       = hyppar.filter
+    activation   = hyppar.activation
+    image_spec_x = hyppar.image_spec_x
+    image_spec_y = hyppar.image_spec_y
 
-    
-    if (hyppar.activation1=="tanh"):
-        activation1=T.tanh
-    elif (hyppar.activation1=="relu"):
-        activation1=T.nnet.relu
-    elif (hyppar.activation1=="elu"):
-        activation1=T.nnet.elu
-    elif (hyppar.activation1=="sigmoid"):
-        activation1=T.nnet.sigmoid
-    else :
-        print("1: UNKNOWN ACTIVATION!!!!!!!!")
-
-    if (hyppar.activation2=="tanh"):
-        activation2=T.tanh
-    elif (hyppar.activation2=="relu"):
-        activation2=T.nnet.relu
-    elif (hyppar.activation2=="elu"):
-        activation2=T.nnet.elu
-    elif (hyppar.activation2=="sigmoid"):
-        activation2=T.nnet.sigmoid
-    else :
-        print("2: UNKNOWN ACTIVATION!!!!!!!!")
-
-    if (hyppar.activation3=="tanh"):
-        activation3=T.tanh
-    elif (hyppar.activation3=="relu"):
-        activation3=T.nnet.relu
-    elif (hyppar.activation3=="elu"):
-        activation3=T.nnet.elu
-    elif (hyppar.activation3=="sigmoid"):
-        activation3=T.nnet.sigmoid
-    else :
-
-        print("3: UNKNOWN ACTIVATION!!!!!!!!")
+    activation_function = []
+    for i in range(NCL):
+        if (activation[i]=="tanh"):
+            activation_function.append(T.tanh)
+        elif (activation[i]=="relu"):
+            activation_function.append(T.nnet.relu)
+        elif (activation[i]=="elu"):
+            activation_function.append(T.nnet.elu)
+        elif (activation[i]=="sigmoid"):
+            activation_function.append(T.nnet.sigmoid)
+        else :
+            print(str(i+1)+": UNKNOWN ACTIVATION!!!!!!!!")
 
     # THIS IS NOT YET IMPLEMENTED TO FCL
     if (hyppar.fc_activation=="tanh"):
@@ -76,59 +44,36 @@ def CNNStructure(layer_0_input,mini_batch_size,rng):
         fc_activation=T.nnet.elu
     elif (hyppar.fc_activation=="sigmoid"):
         fc_activation=T.nnet.sigmoid
-    else :
-        print("FC: UNKNOWN ACTIVATION!!!!!!!!")
+    #else :
+    #    print("FC: UNKNOWN ACTIVATION!!!!!!!!")
 
-    # First convolution and pooling layer                                                                        
-    [layer0_output, layer0_params] = cnn.convLayer(
-        rng,
-        data_input=layer_0_input,
-        image_spec=(mini_batch_size, 1, in_x, in_y),
-        filter_spec=(Nchannel[0], 1, filter1[0], filter1[1]),
-        pool_size=(pool1[0],pool1[1]),
-        activation=activation1)
-
-    # Second convolution and pooling layer                                                                       
-    if (NCL>1):
-        [layer1_output, layer1_params] = cnn.convLayer(
+    cn_output = []
+    params    = []
+    # This is the loop of the convolutions
+    for i in range(NCL):
+        [layer_output, layer_params] = cnn.convLayer(
             rng,
-            data_input=layer0_output,
-            image_spec=(mini_batch_size, Nchannel[0], image_spec_2_x, image_spec_2_y),
-            filter_spec=(Nchannel[1],Nchannel[0],filter2[0],filter2[1]),
-            pool_size=(pool2[0],pool2[1]),
-            activation=activation2)
-    if (NCL>2):
-        [layer2_output, layer2_params] = cnn.convLayer(
-            rng,
-            data_input=layer1_output,
-            image_spec=(mini_batch_size, Nchannel[1], image_spec_3_x, image_spec_3_y),
-            filter_spec=(Nchannel[2],Nchannel[1],filter3[0],filter3[1]),
-            pool_size=(pool3[0],pool3[1]),
-            activation=activation3)
+            data_input=input,
+            image_spec=(mini_batch_size, 1, image_spec_x[i], image_spec_y[i]),
+            filter_spec=(Nchannel[i+1], Nchannel[i], filter[i][0], filter[i][1]),
+            pool_size=(pool[i][0],pool[i][1]),
+            activation=activation_function[i])
 
-    if (NCL==1):
-        fc_layer_input = layer0_output.flatten(2)
-    elif(NCL==2):
-        fc_layer_input = layer1_output.flatten(2)
-    elif(NCL==3):
-        fc_layer_input = layer2_output.flatten(2)
-    
+        cn_output = cn_output + [layer_output]
+        params = params + layer_params
+        input = layer_output
+
+    fc_layer_input = layer_output.flatten(2)
 
     # The fully connected layer operates on a matrix of                                                          
     [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=fc_layer_input,
-        num_in=Nchannel[NCL-1]*fc_in_x*fc_in_y,
+        num_in=Nchannel[NCL]*image_spec_x[-1]*image_spec_y[-1],
         num_out=1)
 
-    if (NCL==1):
-        cn_output = layer0_output
-    elif(NCL==2):
-        cn_output = layer0_output + layer1_output
-    elif(NCL==3):
-        cn_output = [layer0_output] + [layer1_output] + [layer2_output]
-    params = layer0_params + layer1_params + layer2_params + fc_layer_params
-    
+    params = params + fc_layer_params
+
     return E_pred, cn_output, params
     
 
@@ -150,6 +95,9 @@ def TrainCNN():
     mini_batch_size = hyppar.mbs
     reg             = hyppar.reg
 
+    # Random set for following activations
+    rset = rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
+    print(rset)
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
     
@@ -232,6 +180,10 @@ def TrainCNN():
                 (mb_index + 1) * mini_batch_size
             ]})
     
+    get_activations = theano.function(
+        [],
+        cn_output,
+        givens={x: valid_set_x[rset]})
     
 
     # Creates a function that updates the model parameters by SGD.
@@ -283,7 +235,8 @@ def TrainCNN():
             if iter%10==0:
                 statistics.saveParameters(params)
             if iter%2==0:
-                statistics.saveActivations(cn_output)
+                activations=get_activations()
+                statistics.saveActivations(activations)
             
             # Save training error
             train_error.append(float(cost_ij))
