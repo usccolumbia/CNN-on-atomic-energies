@@ -1,5 +1,7 @@
-*.pyc
 src/*.pyc
+src/*#
+src/__pycache__
+src/output
 *~
 venv/
 .cache/
