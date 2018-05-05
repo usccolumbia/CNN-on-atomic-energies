@@ -3,6 +3,7 @@ from numpy import linalg as LA
 import theano
 import theano.tensor as T
 import random as rd
+import hyppar
 
 def RandomSort(X,sigma):
     np.random.seed()
@@ -187,40 +188,17 @@ def get_train_data(filename):
     * Ef: list of all the formation energies of the system
     '''
 
-    spacegrp = []
-    Natoms   = []
-    pc_al    = []
-    pc_ga    = []
-    pc_in    = []
-    lv_alpha = []
-    lv_beta  = []
-    lv_gamma = []
-    lvadeg   = []
-    lvbdeg   = []
-    lvgdeg   = []
-    Ef       = []
-    Eg       = []
+    targets = []
 
-    with open(filename) as f:
-        
+    with open(filename) as f:        
         for line in f.readlines():
-            x = line.split(",")
-            if(not(x[0]=='id')):
-                spacegrp.append(int(x[1]))
-                Natoms.append(float(x[2]))
-                pc_al.append(float(x[3]))
-                pc_ga.append(float(x[4]))
-                pc_in.append(float(x[5]))
-                lv_alpha.append(float(x[6]))
-                lv_beta.append(float(x[7]))
-                lv_gamma.append(float(x[8]))
-                lvadeg.append(float(x[9]))
-                lvbdeg.append(float(x[10]))
-                lvgdeg.append(float(x[11]))
-                Ef.append(float(x[12]))
-                Eg.append(float(x[13]))
+            x = line.split(',')
+            if(target_type=='int'):
+                targets.append(int(x[0]))
+            else: # Float
+                targets.append(float(x[0]))
                 
-    return spacegrp,Natoms,pc_al,pc_ga,pc_in,lv_alpha,lv_beta,lv_gamma,lvadeg,lvbdeg,lvgdeg,Ef,Eg
+    return targets
                                     
     
 def get_geometry(Ntrain,datapath):
