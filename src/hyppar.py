@@ -189,6 +189,7 @@ def parse(filename,varname):
 
 def setInput(filename='input'):
     global datapath
+    global target_type
     global Ndata
     global Naug
     global Ntrain
@@ -258,6 +259,11 @@ def setInput(filename='input'):
     datapath_buffer = parse(filename,'datapath')
     if len(datapath_buffer)>0:
         datapath = datapath_buffer[0]
+
+    datapath_buffer = parse(filename,'target_type')
+    if len(datapath_buffer)>0:
+        target_type = datapath_buffer[0]
+                    
     
     Ndata_buffer = parse(filename,'Ndata')
     if len(Ndata_buffer) > 0:
