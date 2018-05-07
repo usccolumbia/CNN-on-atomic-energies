@@ -166,7 +166,33 @@ def RMSLE(y, y_pred):
     
     return cost_RMSLE
 
+def negative_log_lik(y, p_y_given_x):
+        # Function to compute the cost that is to be minimised.
+        # Here, we compute the negative log-likelihood.
 
+        # Inputs:
+        # y - expected class label
+        # p_y_given_x - class-membership probabilities
+
+        # Outputs:
+        # cost_log - the computed negative log-lik cost
+
+        cost_log = -T.mean(T.log(p_y_given_x)[T.arange(y.shape[0]), y])
+            return cost_log
+
+def class_errors(y, y_pred):
+        # Function to compute to the number of wrongly classified
+        # instances.
+
+        # Inputs:
+        # y - expected class label
+        # y_pred - predicted class label
+
+        # Outputs:
+        # count_error - number of wrongly classified instances
+
+        count_error = T.mean(T.neq(y_pred, y))
+            return count_error
 
 
 
