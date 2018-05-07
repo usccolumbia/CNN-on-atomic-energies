@@ -9,6 +9,10 @@ Naug = 2400
 Ntrain = 3800
 # Validation set size
 Nval = 800
+# Test set size
+Ntest = 600
+# Task
+task = 'regression'
 # Learning_rate
 learning_rate = 0.05
 # Number of epochs
@@ -20,8 +24,8 @@ reg = 0.001
 
 ######### Structural parameters #################
 # 2D input
-in_x = 80
-in_y = 80
+in_x = 1
+in_y = 1
 in_z = 1 
 # Number of convolutional layers
 NCL = 3
@@ -130,16 +134,16 @@ def setStructureParameters():
     image_spec_y.append(in_y)
 
     for i in range(1,NCL+1):
-        image_spec_x.append(image_spec_x[i-1]-filter[i-1][0]+1)
-        image_spec_y.append(image_spec_y[i-1]-filter[i-1][1]+1)
+        image_spec_x.append(int(image_spec_x[i-1]-filter[i-1][0]+1))
+        image_spec_y.append(int(image_spec_y[i-1]-filter[i-1][1]+1))
         if (image_spec_x[i] < 1 or image_spec_y[i] < 1):
             print("\n ERROR!!! Too large filter in convlayer "+str(i)+" \n")
         if (ignore_border):
-            image_spec_x[i]=(image_spec_x[i]-image_spec_x[i]%pool[i-1][0])/pool[i-1][0]
-            image_spec_y[i]=(image_spec_y[i]-image_spec_y[i]%pool[i-1][1])/pool[i-1][1]
+            image_spec_x[i]=int((image_spec_x[i]-image_spec_x[i]%pool[i-1][0])/pool[i-1][0])
+            image_spec_y[i]=int((image_spec_y[i]-image_spec_y[i]%pool[i-1][1])/pool[i-1][1])
         else:
-            image_spec_x[i]=(image_spec_x[i]+image_spec_x[i]%pool[i-1][0])/pool[i-1][0]
-            image_spec_y[i]=(image_spec_y[i]+image_spec_y[i]%pool[i-1][1])/pool[i-1][1]
+            image_spec_x[i]=int((image_spec_x[i]+image_spec_x[i]%pool[i-1][0])/pool[i-1][0])
+            image_spec_y[i]=int((image_spec_y[i]+image_spec_y[i]%pool[i-1][1])/pool[i-1][1])
 
     print('\n STRUCTURE OF NETWORK')
     print('\n Number of convolutional layers      : '+str(NCL))
@@ -194,10 +198,11 @@ def setInput(filename='input'):
     global Naug
     global Ntrain
     global Nval
+    global Ntest
+    global task
     global learning_rate
     global Nepoch
     global mbs
-    global Nchannel
     global reg
     global in_x
     global in_y
@@ -217,6 +222,9 @@ def setInput(filename='input'):
     global ignore_border
 
     # Declare (again) the default values
+
+    task = 'regression'
+    
     learning_rate = 0.05
     Nepoch = 10
     mbs = 20
@@ -280,7 +288,23 @@ def setInput(filename='input'):
     Nval_buffer = parse(filename,'Nval')
     if len(Nval_buffer) > 0:
         Nval = int(Nval_buffer[0])
-    
+
+    Ntest_buffer = parse(filename,'Ntest')
+    if len(Ntest_buffer) > 0:
+        Ntest = int(Ntest_buffer[0])
+
+    if(Ntrain+Nval+Ntest<Ndata or Ntrain+Nval+Ntest>Ndata):
+        print("!!! Error! Data split not consistent with Ndata !!!")
+
+    task_buffer = parse(filename,'task')
+    if len(task_buffer) > 0:
+        task = task_buffer[0]
+
+    if(task=='classification'):
+        Nclass_buffer = parse(filename,'Nclass')
+        if len(Nclass_buffer) > 0:
+            Nclass = int(Nclass_buffer[0])
+        
     learning_rate_buffer = parse(filename,'learning_rate')
     if len(learning_rate_buffer) > 0:
         learning_rate        = float(learning_rate_buffer[0])
@@ -438,6 +462,7 @@ def setInput(filename='input'):
     print(' Number of total data                : '+str(Ndata+Naug))
     print('\n Number of training points           : '+str(Ntrain))
     print(' Number of validation points         : '+str(Nval))
+    print(' Number of test points         : '+str(Ntest))
 
     print('\n OPTIMIZATION PARAMETERS:')
 
