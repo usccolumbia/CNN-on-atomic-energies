@@ -86,7 +86,9 @@ def TrainCNN():
     train_set_x, train_set_y, train_set = load_data.shared_dataset(
         datapar.Xtrain, datapar.Ytrain,
         sample_size=hyppar.Ntrain)
-    test_set_x = load_data.shared_testset(datapar.Xtest)
+    test_set_x, test_set_y, test_set = load_data.shared_dataset(
+        datapar.Xtest, datapar.Ytest,
+        sample_size=hyppar.Ntest)
 
     # Hyperparameters
     learning_rate   = hyppar.learning_rate
@@ -97,7 +99,7 @@ def TrainCNN():
 
     # Random set for following activations
     rset = rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
-    print(rset)
+    
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
     
@@ -109,8 +111,8 @@ def TrainCNN():
     n_valid_batches //= mini_batch_size
     n_test_batches //= mini_batch_size
         
-    print('train: %d batches, validation: %d batches'
-          % (n_train_batches, n_valid_batches))
+    print('train: %d batches, validation: %d batches, testing: %d batches'
+          % (n_train_batches, n_valid_batches, n_test_batches))
 
     # mini-batch index
     mb_index = T.lscalar()
@@ -122,8 +124,10 @@ def TrainCNN():
     print('***** Constructing model ***** ')
     
     # Reshaping tensor of mini_batch_size set of images into a
-    # 4-D tensor of dimensions: mini_batch_size x 1 x 80 x 80
-    layer0_input = x.reshape((mini_batch_size,1,80,80))
+    # 4-D tensor of dimensions: (mini_batch_size , 1 , in_x , in_y)
+    xdim=hyppar.in_x
+    ydim=hyppar.in_y
+    layer0_input = x.reshape((mini_batch_size,1,xdim,ydim))
 
     # Define the CNN function
     E_pred,cn_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
@@ -160,6 +164,20 @@ def TrainCNN():
                 mb_index * mini_batch_size:
                 (mb_index + 1) * mini_batch_size
             ]})
+
+
+    test_model = theano.function(
+        [mb_index],
+        cost,
+        givens={
+            x: test_set_x[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ],
+            y: test_set_y[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ]})
     
     predict = theano.function(
         [mb_index],
@@ -171,15 +189,6 @@ def TrainCNN():
                 
             ]})
 
-    test_model = theano.function(
-        [mb_index],
-        E_pred,
-        givens={
-            x: test_set_x[
-                mb_index * mini_batch_size:
-                (mb_index + 1) * mini_batch_size
-            ]})
-    
     get_activations = theano.function(
         [],
         cn_output,
@@ -260,14 +269,12 @@ def TrainCNN():
                         step=step+1
                 np.savetxt('output/E_pred_'+str(iter)+'.txt',E)
 
-    # Predict energies for test set
-    E_test = np.zeros((n_test_batches*mini_batch_size,1))
-    step=0
-    for i in range(n_test_batches):
-        buf = test_model(i)
-        for j in range(mini_batch_size):
-            E_test[step,0]=buf[j]
-            step=step+1
+    test_losses = [test_model(i) for i in range(n_test_batches)]
+    # Compute the mean prediction error across all the mini-batches.
+    test_score = np.mean(test_losses)
+    # Save validation error
+    test_error = test_score
+    print("Test error: "+str(test_error))
 
     statistics.writeActivations()
     # Return values:
