@@ -18,23 +18,29 @@ def splitDataset():
     global Xval
     # Validation set labels
     global Yval
-    # Test set: Only features
+    # Test set features
     global Xtest
-
+    # Test set labels
+    global Ytest
+    
     # Use: from module hyppar
-    Ntrain=hyppar.Ntrain
-    Nval=hyppar.Nval
-    datapath=hyppar.datapath
+    Ntrain   = hyppar.Ntrain
+    Nval     = hyppar.Nval
+    Ntest    = hyppar.Ntest
+    datapath = hyppar.datapath
+    xdim     = hyppar.in_x
+    ydim     = hyppar.in_y
     
     # Use: local module
     global Xdata
     global Ydata
 
-    Xtrain=np.zeros((Ntrain,6400))
+    Xtrain=np.zeros((Ntrain,xdim*ydim))
     Ytrain=np.zeros((Ntrain,1))
-    Xval=np.zeros((Nval,6400))
+    Xval=np.zeros((Nval,xdim*ydim))
     Yval=np.zeros((Nval,1))
-    Xtest=np.zeros((600,6400))
+    Xtest=np.zeros((Ntest,xdim*ydim))
+    Ytest=np.zeros((Ntest,1))
     for i in range(Nval):
         Xval[i,:]=Xdata[i,:,:].flatten(0)
         Yval[i,0]=Ydata[i,0]
@@ -42,87 +48,42 @@ def splitDataset():
         ind=Nval+i
         Xtrain[i,:]=Xdata[ind,:,:].flatten(0)
         Ytrain[i,0]=Ydata[ind,0]
-    for i in range(600):
-        X=np.loadtxt(datapath+'CM/test/'+str(i+1))
-        Xtest[i,:]=X.flatten(0)
+    for i in range(Ntest):
+        ind=Nval+Ntrain+i
+        Xtest[i,:]=Xdata[ind,:,:].flatten(0)
+        Ytest[i,0]=Ydata[ind,0]
 
 
 
 def loadDataPoints():
     '''
-    Loads feature vectors as lists of Coulomb matrices and
-    labels as a N x 1 matrix of formation (or band gap) energies.
+    Download feature matrices and target vector
     '''
-    rd.seed()
-    # Dataset features
-    global Xdata
-    # Dataset labels
+    # Target value vector
     global Ydata
-
-    # Use: local module variables
-    global Ef
+    global Xdata
 
     # Use: hyppar-module
     Ndata    = hyppar.Ndata
-    Naug     = hyppar.Naug
     datapath = hyppar.datapath
+    xdim     = hyppar.in_x
+    ydim     = hyppar.in_y
+    zdim     = hyppar.in_z
     
-
-
-    Xdata=np.zeros((Ndata+Naug,80,80))
-    Ydata=np.zeros((Ndata+Naug,1))
     step=0
-
+    
+    Xdata=np.zeros((Ndata,xdim,ydim))
     for i in np.arange(Ndata):
-        X=np.loadtxt(datapath+'CM/train/'+str(i+1)+'.gz')
-        XX = load_data.RandomSort(X,0.15)
-        Xdata[step,:,:]=XX
-        Ydata[step,0]=100*Ef[i]
+        X=np.loadtxt(datapath+'/Xdata/'+str(i+1))
+        XX=X.reshape(zdim,ydim,xdim)
+        Xdata[step,:,:]=X
         step=step+1
         
-    for i in np.arange(Naug):
-        j = rd.randrange(0,Ndata)
-        X=np.loadtxt(datapath+'CM/train/'+str(j+1)+'.gz')
-        XX = load_data.RandomSort(X,0.15)
-        Xdata[step,:,:]=XX
-        Ydata[step,0]=100*Ef[j]
-        step=step+1
 
+    Ydata=np.zeros((Ndata,1))
+    Ydata_vector=np.loadtxt(datapath+'/Ydata')
+    for i in range(Ndata):
+        Ydata[i,0]=Ydata_vector[i]
 
-def loadRawData():
-    '''
-    Download global variables of systems.
-    Each variable is a list of values for each system.
-    Coulomb matrices follow the same order in indexing.
-    '''
-    # Spacegroup of the systems
-    global spacegrp
-    # Number of atoms
-    global Natoms
-    # Percentage of Al
-    global pc_al
-    # % Ga
-    global pc_ga
-    # % In
-    global pc_in
-    global lv_alpha
-    global lv_beta
-    global lv_gamma
-    global lvadeg
-    global lvbdeg
-    global lvgdeg
-    # Formation energies LABELS
-    global Ef
-    # Band gap energies LABELS
-    global Eg
-    # Training set atom coordinates
-    global xyz_Train
-    # Training set atom elements (str)
-    global elements_Train
-    # Training set lattice vectors
-    global lattices_Train
-
-    filename = hyppar.datapath+'data/train.csv'
-    spacegrp,Natoms,pc_al,pc_ga,pc_in,lv_alpha,lv_beta,lv_gamma,lvadeg,lvbdeg,lvgdeg,Ef,Eg = load_data.get_train_data(filename)
-    xyz_Train,elements_Train,lattices_Train=load_data.get_geometry(hyppar.Ndata,hyppar.datapath+'data')
+    
 
