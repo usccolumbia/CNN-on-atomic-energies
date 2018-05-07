@@ -20,10 +20,6 @@ hyppar.setInput()
 print("\n Setting up CNN structure...")
 hyppar.setStructureParameters()
 
-# Read raw data
-print("Reading raw data...")
-datapar.loadRawData()
-
 # Handle dataset
 print("Loading dataset...")
 datapar.loadDataPoints()
