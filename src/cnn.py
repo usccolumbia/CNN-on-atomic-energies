@@ -1,4 +1,5 @@
 import numpy as np
+import datapar
 import theano
 import theano.tensor as T
 import random as rd
@@ -35,7 +36,7 @@ def gradient_updates_Adam(cost, params, learning_rate):
     updates.append((t, t + 1))
     return updates
 
-def pooling(input_pool, size, ignore_border=False):
+def pooling(input_pool, size, ignore_border=True):
     # Function to perform Max-Pooling on each feature map
     
     # Inputs:
@@ -72,7 +73,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     
     # Weigths
     W = theano.shared(
-        np.asarray(rng.normal(0, 0.1, size=filter_spec)),
+        np.asarray(rng.normal(loc=0, scale=0.1, size=filter_spec)),
         borrow=True)
     # Bias is a 1 D tensor -- one bias per output feature map.
     # Initialised with zeros.
@@ -86,7 +87,8 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
         input=data_input,
         filters=W,
         filter_shape=filter_spec,
-        input_shape=image_spec)
+        input_shape=image_spec,
+        border_mode='valid')
     
     # Add the bias term and use the specified activation function/
     # non-linearity.
@@ -100,7 +102,7 @@ def convLayer(rng, data_input, filter_spec, image_spec, pool_size, activation):
     params = [W, b]
     return output, params
 
-def fullyConnectedLayer(rng,data_input, num_in,num_out):
+def fullyConnectedLayer(rng,data_input, num_in,num_out,activation):
     # Function to create the fully-connected layer and makes use of the
     # output from the previous layer. It is the final layer in the
     # convolutional neural network architecture and comprises of the
@@ -138,7 +140,8 @@ def fullyConnectedLayer(rng,data_input, num_in,num_out):
         borrow=True)
     
     # Compute predicted energies
-    E_pred = T.dot(data_input, W) + b
+    
+    E_pred = activation(T.dot(data_input, W) + b)
         
     # Combine weights and biases into a single list.
     params = [W, b]
@@ -166,36 +169,74 @@ def RMSLE(y, y_pred):
     
     return cost_RMSLE
 
-def negative_log_lik(y, p_y_given_x):
-        # Function to compute the cost that is to be minimised.
-        # Here, we compute the negative log-likelihood.
+def negative_log_lik(p_y_given_x,y):
+    # CURRENTLY NOT WORKING!!!
 
-        # Inputs:
-        # y - expected class label
-        # p_y_given_x - class-membership probabilities
+    # Function to compute the cost that is to be minimised.
+    # Here, we compute the negative log-likelihood.
 
-        # Outputs:
-        # cost_log - the computed negative log-lik cost
+    
+    
+    # Inputs:
+    # y - expected class label
+    # p_y_given_x - class-membership probabilities
+    
+    # Outputs:
+    # cost_log - the computed negative log-lik cost
 
-        cost_log = -T.mean(T.log(p_y_given_x)[T.arange(y.shape[0]), y])
-            return cost_log
+    yint=T.argmax(y,axis=1)
+    
+    # Generate the relevant row indices
+    rows = T.arange(yint.shape[0])
+    
+    # Generate the relevant column indices
+    cols = yint
+    
+    # Computing the log probabilities
+    log_prob = T.log(p_y_given_x)
+    
+    # Obtain the mean of the relevant entries. Loss is formally
+    # defined over the sum of the individual error terms as in
+    # the equation above. However, we use mean instead to speed
+    # up convergence.
+    cost_log = -T.sum(log_prob[rows, cols])
+    return cost_log
 
-def class_errors(y, y_pred):
-        # Function to compute to the number of wrongly classified
-        # instances.
+def categorical_cross_entropy(y_pred,y):
+    '''
+    Function to compute the negative cross-entropy cost
+    Between approximated distribution and a true distribution
 
-        # Inputs:
-        # y - expected class label
-        # y_pred - predicted class label
+    Inputs:
+    2D matrices describing true and predicted likelihoods
+    
+    Output:
+    0-D value
+    '''
 
-        # Outputs:
-        # count_error - number of wrongly classified instances
+    return T.sum(T.nnet.categorical_crossentropy(y_pred,y))
+    
 
-        count_error = T.mean(T.neq(y_pred, y))
-            return count_error
+def class_errors(y_pred,y):
+    # Function to compute to the number of wrongly classified
+    # instances.
+    
+    # Inputs:
+    # y - expected class label in onehot-format
+    # y_pred - predicted class label
+    
+    # Outputs:
+    # count_error - number of wrongly classified instances
+
+    labels=T.argmax(y,axis=1)
+    preds=T.argmax(y_pred,axis=1)
+    
+    count_error = T.mean(T.neq(preds, labels))
+    return count_error
 
 
-
+def linear_activation(x):
+    return x
 
 
 

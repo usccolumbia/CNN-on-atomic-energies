@@ -10,12 +10,12 @@ Most of the functions in this module AND in this branch are only
 useful in preprocessing of certain data (all but shared_dataset()). 
 '''
 
-def onehot(y):
+def onehot(y,Nclass):
     ''' 
     Turn numpy vector y into onehot-format.
     '''
-    Nclass=hyppar.Nclass
-    Ndata=hyppar.Ndata
+    
+    Ndata=len(y)
     y_onehot=np.zeros((Ndata,Nclass))
     for i in range(Ndata):
         y_onehot[i,int(y[i])]=1
@@ -43,7 +43,7 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
     except ValueError:
         print('Sample size exceeds data size.')
     data_x = data_x[indices, :]
-    data_y = data_y[indices]
+    data_y = data_y[indices,:]
     
     shared_x = theano.shared(np.asarray(data_x,
                                         dtype=theano.config.floatX),
@@ -53,6 +53,26 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
                              borrow=borrow)
     return shared_x, shared_y, (data_x, data_y)
 
+def shared_dataset_2(data_x, data_y, sample_size=2400, borrow=True):
+    rd.seed(23455)
+    indices = 0
+    if (sample_size < 0):
+        print('Sample size too small!')
+        return
+    try:
+        indices = rd.sample(range(0, data_y.shape[0]), sample_size)
+    except ValueError:
+        print('Sample size exceeds data size.')
+    data_x = data_x[indices, :]
+    data_y = data_y[indices]
+        
+    shared_x = theano.shared(np.asarray(data_x,
+                                    dtype=theano.config.floatX),
+                             borrow=borrow)
+    shared_y = theano.shared(np.asarray(data_y,
+                                        dtype=theano.config.floatX),
+                             borrow=borrow)
+    return shared_x, shared_y, (data_x, data_y)
 
 def make_correlation_matrix_fast(xyz,lat,elm,rndnoise=False):
     '''
