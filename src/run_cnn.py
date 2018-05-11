@@ -21,7 +21,7 @@ def CNNStructure(input,mini_batch_size,rng):
     activation   = hyppar.activation
     image_spec_x = hyppar.image_spec_x
     image_spec_y = hyppar.image_spec_y
-    n_out        = hyppar.n_out
+    fc_out        = hyppar.fc_out
 
     activation_function = []
     for i in range(NCL):
@@ -77,9 +77,9 @@ def CNNStructure(input,mini_batch_size,rng):
         [y_pred, fc_layer_params] = cnn.fullyConnectedLayer(
             rng=rng,
             data_input=fc_layer_input,
-            num_in=Nchannel[NCL]*image_spec_x[-1]*image_spec_y[-1],
-            num_out=n_out,
-            activation=fc_activation)
+            num_in=len(fc_layer_input), # Is this unstylish? Maybe.
+            num_out=fc_out[i],
+            activation=fc_activation[i])
 
         fc_output = fc_output + y_pred
         params = params + fc_layer_params
