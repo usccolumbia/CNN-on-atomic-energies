@@ -35,15 +35,16 @@ def writeParameters(dir="output"):
             bim[i,:]       = b[j][i]
         np.save(dir+'/weights_convlayer_'+str(i),wim)
         np.save(dir+'/biases_convlayer_'+str(i),bim)
-        
-    wfim = np.zeros((Niter,Nc[-1]*image_spec_x[-1]*image_spec_y[-1],1))
-    bfim = np.zeros((Niter))
-    for i in range(Niter):
-        wfim[i,:,:] = w[i][-1]
-        bfim[i] = b[i][-1]
 
-    np.save(dir+'/weights_FClayer_'+str(i),wfim)
-    np.save(dir+'/biases_FClayer_'+str(i),bfim)
+        
+#    wfim = np.zeros((Niter,Nc[-1]*image_spec_x[-1]*image_spec_y[-1],1))
+#    bfim = np.zeros((Niter,))
+#    for i in range(Niter):
+#        wfim[i,:,:] = w[i][-1]
+#        bfim[i] = b[i][-1]
+
+#    np.save(dir+'/weights_FClayer_'+str(i),wfim)
+#    np.save(dir+'/biases_FClayer_'+str(i),bfim)
 
         
 
