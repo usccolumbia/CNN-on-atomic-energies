@@ -149,12 +149,6 @@ def TrainCNN():
     # Define the CNN function
     y_pred,cn_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
 
-
-    # Class prediction in case of a classification task
-    if (hyppar.task=='classification'):
-        classes_pred=T.argmax(y_pred,axis=1)
-        error=cnn.class_errors(y_pred,y)
-        
     # Cost that is minimised during stochastic descent. Includes regularization
     cost = hyppar.cost_function(y_pred,y)
     
@@ -188,21 +182,6 @@ def TrainCNN():
                 (mb_index + 1) * mini_batch_size
             ]})
 
-    if (hyppar.task=='classification'):
-        valid_errors = theano.function(
-            [mb_index],
-            error,
-            givens={
-                x: valid_set_x[
-                    mb_index * mini_batch_size:
-                    (mb_index + 1) * mini_batch_size
-                ],
-                y: valid_set_y[
-                    mb_index * mini_batch_size:
-                    (mb_index + 1) * mini_batch_size
-                ]})
-        
-    
     test_model = theano.function(
         [mb_index],
         cost,
@@ -224,17 +203,6 @@ def TrainCNN():
                 mb_index * mini_batch_size:
                 (mb_index+1) * mini_batch_size
                 
-            ]})
-
-    if (hyppar.task=='classification'):
-        predict_class = theano.function(
-            [mb_index],
-            classes_pred,
-            givens={
-                x : valid_set_x[
-                    mb_index * mini_batch_size:
-                    (mb_index+1) * mini_batch_size
-                    
             ]})
 
     if (hyppar.NCL>0):
@@ -290,38 +258,27 @@ def TrainCNN():
             # minibatch_index.
             cost_ij = train_model(minibatch_index)
             
-            if iter%10==0:
+            if iter%20==0:
                 statistics.saveParameters(params)
-#            if iter%2==0:
-#                activations=get_activations()
-#                statistics.saveActivations(activations)
+            if iter%20==0 and NCL>0:
+                activations=get_activations()
+                statistics.saveActivations(activations)
             
             # Save training error
             train_error.append(float(cost_ij))
 
             # Currently validation error depends on the type of task
-            if (hyppar.task=='regression'):
-                valid_losses = [valid_model(i) for i in range(n_valid_batches)]
-                # Compute the mean prediction error across all the mini-batches.
-                valid_score = np.mean(valid_losses)
-                print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
-            else:
-                valid_losses = [valid_errors(i) for i in range(n_valid_batches)]
-                # Compute the mean prediction error across all the mini-batches.
-                valid_score = np.mean(valid_losses)
-                print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation error: "+str(valid_score))
-                # Save validation error
-                valid_error.append(valid_score)
-                
+            valid_losses = [valid_model(i) for i in range(n_valid_batches)]
+            # Compute the mean prediction error across all the mini-batches.
+            valid_score = np.mean(valid_losses)
+            print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
+                            
             if (iter%20==0):
-                # Get predicted energies from validation set
+                # Get predicted labels from validation set
                 E = np.zeros((n_valid_batches*mini_batch_size,1))
                 step=0
                 for i in range(n_valid_batches):
-                    if(hyppar.task=='regression'):
-                        buf = predict(i)
-                    else:
-                        buf = predict_class(i)
+                    buf = predict(i)
                     for j in range(mini_batch_size):
                         E[step,0]=buf[j]
                         step=step+1
