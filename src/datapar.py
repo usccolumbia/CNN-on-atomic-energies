@@ -41,20 +41,39 @@ def splitDataset():
     Yval=np.zeros((Nval,1))
     Xtest=np.zeros((Ntest,xdim*ydim))
     Ytest=np.zeros((Ntest,1))
-    for i in range(Nval):
-        Xval[i,:]=Xdata[i,:,:].flatten(0)
-        Yval[i,0]=Ydata[i,0]
-    for i in range(Ntrain):
-        ind=Nval+i
-        Xtrain[i,:]=Xdata[ind,:,:].flatten(0)
-        Ytrain[i,0]=Ydata[ind,0]
-    for i in range(Ntest):
-        ind=Nval+Ntrain+i
-        Xtest[i,:]=Xdata[ind,:,:].flatten(0)
-        Ytest[i,0]=Ydata[ind,0]
-
-
-
+    
+    if (hyppar.target_type=='int'):
+        for i in range(Nval):
+            Xval[i,:]=Xdata[i,:,:].flatten(0)
+            Yval[i,0]=int(Ydata[i,0])
+        for i in range(Ntrain):
+            ind=Nval+i
+            Xtrain[i,:]=Xdata[ind,:,:].flatten(0)
+            Ytrain[i,0]=int(Ydata[ind,0])
+        for i in range(Ntest):
+            ind=Nval+Ntrain+i
+            Xtest[i,:]=Xdata[ind,:,:].flatten(0)
+            Ytest[i,0]=int(Ydata[ind,0])
+    else:
+        for i in range(Nval):
+            Xval[i,:]=Xdata[i,:,:].flatten(0)
+            Yval[i,0]=float(Ydata[i,0])
+        for i in range(Ntrain):
+            ind=Nval+i
+            Xtrain[i,:]=Xdata[ind,:,:].flatten(0)
+            Ytrain[i,0]=float(Ydata[ind,0])
+        for i in range(Ntest):
+            ind=Nval+Ntrain+i
+            Xtest[i,:]=Xdata[ind,:,:].flatten(0)
+            Ytest[i,0]=float(Ydata[ind,0])
+                                                                                            
+        
+    # ONEHOT_ENCODING: (Not currently used)
+    if(hyppar.task=='classification'):
+        Ytrain=load_data.onehot(Ytrain[:,0],hyppar.Nclass)
+        Yval=load_data.onehot(Yval[:,0],hyppar.Nclass)
+        Ytest=load_data.onehot(Ytest[:,0],hyppar.Nclass)
+        
 def loadDataPoints():
     '''
     Download feature matrices and target vector
