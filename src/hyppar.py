@@ -1,4 +1,4 @@
-
+import cnn
 ###### DEFAULT VALUES: ###############
 datapath = "/wrk/krsimula/DONOTREMOVE/NEURAL_NETWORKS/CNN-on-atomic-energies/"
 # Number of datapoints
@@ -27,6 +27,9 @@ reg = 0.001
 in_x = 1
 in_y = 1
 in_z = 1 
+fc_out1 = 1
+fc_out2 = 1
+fc_out3 = 1
 # Number of convolutional layers
 NCL = 3
 # Number of chanels
@@ -58,12 +61,17 @@ activation5    = 'tanh'
 activation6    = 'tanh'
 activation7    = 'tanh' 
 
+# Cost function
+cost_function=cnn.linear_activation
+
 # Number of fully connected layers
 NFC            = 1
 # Activations
-fc_activation  = 'lin'
+fc_activation1  = 'lin'
+fc_activation2  = 'lin'
+fc_activation3  = 'lin'
 # Ignore border in pooling
-ignore_border  = False
+ignore_border  = True
 
 #####################################
 
@@ -79,6 +87,7 @@ def setStructureParameters():
     global NFC
     global in_x
     global in_y
+    global in_z
     global filter1
     global filter2
     global filter3
@@ -89,12 +98,19 @@ def setStructureParameters():
     global activation1
     global activation2
     global activation3
-    global fc_activation
+    global fc_activation1
+    global fc_activation2
+    global fc_activation3
+    global fc_out1
+    global fc_out2
+    global fc_out3
     global Nchannel
     
     # New global parameters:
     global image_spec_x
     global image_spec_y
+    global fc_out
+
     
     global pool
     pool = []
@@ -126,14 +142,28 @@ def setStructureParameters():
     activation.append(activation6)
     activation.append(activation7)
 
-
+    global fc_activation
+    fc_activation = []
+    fc_activation.append(fc_activation1)
+    fc_activation.append(fc_activation2)
+    fc_activation.append(fc_activation3)
+    
+    fc_out = []
+    fc_out.append(fc_out1)
+    fc_out.append(fc_out2)
+    fc_out.append(fc_out3)
+    
+    
     image_spec_x = []
     image_spec_y = []
+    image_spec_z = []
 
     image_spec_x.append(in_x)
     image_spec_y.append(in_y)
-
+    image_spec_z.append(in_z)
+    
     for i in range(1,NCL+1):
+        # This is only for border_mode=='valid'
         image_spec_x.append(int(image_spec_x[i-1]-filter[i-1][0]+1))
         image_spec_y.append(int(image_spec_y[i-1]-filter[i-1][1]+1))
         if (image_spec_x[i] < 1 or image_spec_y[i] < 1):
@@ -145,12 +175,13 @@ def setStructureParameters():
             image_spec_x[i]=int((image_spec_x[i]+image_spec_x[i]%pool[i-1][0])/pool[i-1][0])
             image_spec_y[i]=int((image_spec_y[i]+image_spec_y[i]%pool[i-1][1])/pool[i-1][1])
 
+        
     print('\n STRUCTURE OF NETWORK')
     print('\n Number of convolutional layers      : '+str(NCL))
     print(' Number of fully connected layers    : '+str(NFC))
 
     print('\n Shape of the input:')
-    print(in_x,in_y)
+    print(in_x,in_y,in_z)
     print('\n')
 
     for i in range(NCL):    
@@ -163,7 +194,7 @@ def setStructureParameters():
         print(' Activation: ')
         print(activation[i])
         print('Output image1:')
-        print(Nchannel[i],image_spec_x[i+1],image_spec_y[i+1])
+        print(Nchannel[i+1],image_spec_x[i+1],image_spec_y[i+1])
         print('\n')
         
     print(' Fully connected layer activation   : '+fc_activation)
@@ -206,6 +237,11 @@ def setInput(filename='input'):
     global reg
     global in_x
     global in_y
+    global in_z
+    global fc_out1
+    global fc_out2
+    global fc_out3# This and the next one: should they be the same?
+    global Nclass
     global NCL
     global Nchannel
     global filter1
@@ -217,8 +253,11 @@ def setInput(filename='input'):
     global activation1
     global activation2
     global activation3
+    global cost_function
     global NFC
-    global fc_activation
+    global fc_activation1
+    global fc_activation2
+    global fc_activation3
     global ignore_border
 
     # Declare (again) the default values
@@ -260,7 +299,9 @@ def setInput(filename='input'):
     activation7    = 'tanh'
     
     NFC            = 1
-    fc_activation  = 'lin'
+    fc_activation1  = 'lin'
+    fc_activation2  = 'lin'
+    fc_activation3  = 'lin'
     
     
     
@@ -332,7 +373,20 @@ def setInput(filename='input'):
     buffer = parse(filename,'in_z')
     if len(buffer) > 0:
         in_z = int(buffer[0])
-    
+
+    buffer = parse(filename,'fc_out1')
+    if len(buffer) > 0:
+        fc_out1 = int(buffer[0])
+
+    buffer = parse(filename,'fc_out2')
+    if len(buffer) > 0:
+        fc_out2 = int(buffer[0])
+
+    buffer = parse(filename,'fc_out3')
+    if len(buffer) > 0:
+        fc_out3 = int(buffer[0])
+                    
+        
     buffer = parse(filename,'NCL')
     if len(buffer) > 0:
         NCL = int(buffer[0])
@@ -443,14 +497,31 @@ def setInput(filename='input'):
         activation7=buffer[0]
 
 
-    buffer = parse(filename,'fc_activation')
+    buffer = parse(filename,'fc_activation1')
     if len(buffer) > 0:
-        fc_activation=buffer[0]
+        fc_activation1=buffer[0]
 
+    buffer = parse(filename,'fc_activation2')
+    if len(buffer) > 0:
+        fc_activation2=buffer[0]
+
+    buffer = parse(filename,'fc_activation3')
+    if len(buffer) > 0:
+        fc_activation3=buffer[0]
+        
     buffer = parse(filename,'ignore_border')
     if (len(buffer) > 0):
         ignore_border=buffer[0]
 
+    buffer = parse(filename,'cost_function')
+    if len(buffer) > 0:
+        if(buffer[0]=='MSE'):
+            cost_function=cnn.MSE
+        elif(buffer[0]=='RMSLE'):
+            cost_function=cnn.RMSLE
+        elif(buffer[0]=='CC'):
+            cost_function=cnn.categorical_cross_entropy
+        
     print("\n *** Reading input: Done ***")
     
     print("\n Data is read from directory: "+datapath)
