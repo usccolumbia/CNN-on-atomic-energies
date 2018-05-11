@@ -11,7 +11,7 @@ b=[]
 
 # Activations of the convlayers, to be saved during training
 conv_out = []
-
+fc_out   = []
 
 def writeParameters(dir="output"):
     global w
@@ -68,7 +68,23 @@ def writeActivations(dir="output"):
                 image[k,:,:,:] = conv_out[k][j][i] 
             np.save(dir+'/activations_layer'+str(i)+'_sample'+str(j),image)
         
-        
+def writefcActivations(dir="output"):
+    global fc_out
+    NFC = hyppar.NFC
+
+    Niter = len(fc_out)
+    Nlayer = len(fc_out[0])
+    Nsample = hyppar.Nsamples_fc
+
+    for i in range(NFC):
+        Nnode=hyppar.fc_out[i]
+        image = np.zeros((Niter,Nnode,Nsample))
+        for j in range(Nnode):
+            for k in range(Niter):
+                image[k,j,:] = fc_out[k][i][j]
+        np.save(dir+'/activations_fclayer'+str(i),image)
+
+            
 def saveActivations(activations):
     '''
     Completely saves the current activation tensors of
@@ -99,7 +115,35 @@ def saveActivations(activations):
     
     conv_out.append(iter)
     
+def savefcActivations(activations):
+    '''
+    Completely saves the current activation tensors of 
+    the fully connected layers from input samples. 
+    Data structure for saved activations: 
+    fc_out   : #iter x [#layers x [#samples  x #nodes]] 
+    Example: 
+    iter i, layer l, node n has a numpy entry obtained by 
+    fc_out[i][l][n] := Nsamples
+    '''
+    global fc_out
+
+    Nl = len(activations)
+    Ns = hyppar.Nsamples_fc
+
     
+    iter=[] # fc_out snapshot
+    
+    for i in range(Nl):              # Layer
+        layer = []
+        A = np.array(activations[i])
+        for j in range(hyppar.fc_out[i]):   # Node
+            node = []
+            for k in range(Ns):      # feature
+                node.append(A[k,j])
+            layer.append(node)
+        iter.append(layer)
+            
+    fc_out.append(iter)
 
 def saveParameters(params):
     ''' 
