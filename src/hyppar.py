@@ -22,6 +22,13 @@ mbs = 20
 # Regularization
 reg = 0.001
 
+accumulate_parameters     = 20
+accumulate_cn_activations = 20
+accumulate_fc_activations = 20
+Nsamples_fc               = 1
+accumulate_predictions    = 20
+
+
 ######### Structural parameters #################
 # 2D input
 in_x = 1
@@ -262,7 +269,11 @@ def setInput(filename='input'):
     global fc_activation2
     global fc_activation3
     global ignore_border
-
+    global accumulate_parameters     
+    global accumulate_cn_activations 
+    global accumulate_fc_activations 
+    global accumulate_predictions    
+    global Nsamples_fc
     # Declare (again) the default values
 
     task = 'regression'
@@ -348,7 +359,27 @@ def setInput(filename='input'):
         Nclass_buffer = parse(filename,'Nclass')
         if len(Nclass_buffer) > 0:
             Nclass = int(Nclass_buffer[0])
-        
+
+    buffer = parse(filename,'accumulate_parameters')
+    if len(buffer) > 0:
+            accumulate_parameters= int(buffer[0])
+
+    buffer = parse(filename,'accumulate_cn_activations')
+    if len(buffer) > 0:
+        accumulate_cn_activations= int(buffer[0])
+                    
+    buffer = parse(filename,'accumulate_fc_activations')
+    if len(buffer) > 0:
+        accumulate_fc_activations= int(buffer[0])
+
+    buffer = parse(filename,'accumulate_predictions')
+    if len(buffer) > 0:
+        accumulate_predictions= int(buffer[0])
+
+    buffer = parse(filename,'Nsamples_fc')
+    if len(buffer) > 0:
+        Nsamples_fc= int(buffer[0])
+            
     learning_rate_buffer = parse(filename,'learning_rate')
     if len(learning_rate_buffer) > 0:
         learning_rate        = float(learning_rate_buffer[0])

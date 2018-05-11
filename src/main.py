@@ -4,7 +4,8 @@ import theano
 import theano.tensor as T
 import load_data
 import random as rd
-import run_cnn
+import train_regression
+import train_classification
 import hyppar
 import datapar
 
@@ -28,4 +29,7 @@ datapar.loadDataPoints()
 print("Splitting dataset...")
 datapar.splitDataset()
 
-run_cnn.TrainCNN()
+if(hyppar.task=='classification'):
+    train_classification.TrainCNN()
+else:
+    train_regression.TrainCNN()

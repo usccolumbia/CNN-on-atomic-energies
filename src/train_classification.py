@@ -49,7 +49,7 @@ def CNNStructure(input,mini_batch_size,rng):
         elif (hyppar.fc_activation[i]=="softmax"):
             fc_activation.append(T.nnet.softmax)
         else:
-            fc_activation.append(cnn.linear_activation)
+            fc_activation=cnn.linear_activation
 
     cn_output = []
     params    = []
@@ -84,12 +84,13 @@ def CNNStructure(input,mini_batch_size,rng):
             num_in=num_in, # Is this unstylish? Maybe.
             num_out=fc_out[i],
             activation=fc_activation[i])
+
         num_in=fc_out[i]
-        fc_output = fc_output + [y_pred]
+        fc_output = fc_output + y_pred
         params = params + fc_layer_params
         fc_layer_input = y_pred
         
-    return y_pred, cn_output, fc_output, params
+    return y_pred, cn_output, params
     
 
 def TrainCNN():
@@ -114,7 +115,7 @@ def TrainCNN():
     reg             = hyppar.reg
 
     # Random set for following activations
-    rset = range(mini_batch_size)#rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
+    rset = rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
     
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
@@ -132,7 +133,7 @@ def TrainCNN():
 
     # mini-batch index
     mb_index = T.lscalar()
-    # Input matrices ( mini_batch_size x xdim x ydim matrix)
+    # Coulomb matrices ( mini_batch_size x 80 x 80 matrix)
     x = T.matrix('x')
     # Target energies (1 x mini_batch_size)
     y = T.matrix('y')
@@ -146,8 +147,13 @@ def TrainCNN():
     layer0_input = x.reshape((mini_batch_size,1,xdim,ydim))
 
     # Define the CNN function
-    y_pred,cn_output,fc_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
+    y_pred,cn_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
 
+
+    # Class prediction
+    classes_pred=T.argmax(y_pred,axis=1)
+    error=cnn.class_errors(y_pred,y)
+        
     # Cost that is minimised during stochastic descent. Includes regularization
     cost = hyppar.cost_function(y_pred,y)
     
@@ -181,6 +187,20 @@ def TrainCNN():
                 (mb_index + 1) * mini_batch_size
             ]})
 
+    valid_errors = theano.function(
+        [mb_index],
+        error,
+        givens={
+            x: valid_set_x[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ],
+            y: valid_set_y[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ]})
+        
+    
     test_model = theano.function(
         [mb_index],
         cost,
@@ -203,6 +223,16 @@ def TrainCNN():
                 (mb_index+1) * mini_batch_size
                 
             ]})
+    
+    predict_class = theano.function(
+        [mb_index],
+        classes_pred,
+            givens={
+                x : valid_set_x[
+                    mb_index * mini_batch_size:
+                    (mb_index+1) * mini_batch_size
+                    
+                ]})
 
     if (hyppar.NCL>0):
         get_activations = theano.function(
@@ -210,12 +240,7 @@ def TrainCNN():
             cn_output,
             givens={x: valid_set_x[rset]})
     
-    if(hyppar.NFC>0):
-        get_fc_activations = theano.function(
-            [],
-            fc_output,
-            givens={x: valid_set_x[rset]})
-        
+
     # Creates a function that updates the model parameters by SGD.
     # The updates list is created by looping over all
     # (params[i], grads[i]) pairs.
@@ -262,30 +287,29 @@ def TrainCNN():
             # minibatch_index.
             cost_ij = train_model(minibatch_index)
             
-            if iter%hyppar.accumulate_parameters==0:
+            if iter%20==0:
                 statistics.saveParameters(params)
-            if iter%hyppar.accumulate_cn_activations==0 and hyppar.NCL>0:
+            if iter%20==0 and hyppar.NCL>0:
                 activations=get_activations()
                 statistics.saveActivations(activations)
-            if iter%hyppar.accumulate_fc_activations==0 and hyppar.NFC>0:
-                fc_act=get_fc_activations()
-                statistics.savefcActivations(fc_act)
             
             # Save training error
             train_error.append(float(cost_ij))
 
             # Currently validation error depends on the type of task
-            valid_losses = [valid_model(i) for i in range(n_valid_batches)]
+            valid_losses = [valid_errors(i) for i in range(n_valid_batches)]
             # Compute the mean prediction error across all the mini-batches.
             valid_score = np.mean(valid_losses)
-            print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
-                            
+            print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation error: "+str(valid_score))
+            # Save validation error
+            valid_error.append(valid_score)
+                
             if (iter%20==0):
-                # Get predicted labels from validation set
+                # Get predicted energies from validation set
                 E = np.zeros((n_valid_batches*mini_batch_size,1))
                 step=0
                 for i in range(n_valid_batches):
-                    buf = predict(i)
+                    buf = predict_class(i)
                     for j in range(mini_batch_size):
                         E[step,0]=buf[j]
                         step=step+1
@@ -298,9 +322,7 @@ def TrainCNN():
     test_error = test_score
     print("Test error: "+str(test_error))
 
-    if(hyppar.NCL>0):statistics.writeActivations()
-    if(hyppar.NFC>0):statistics.writefcActivations()
-    
+    statistics.writeActivations()
     # Return values:
     statistics.saveParameters(params)
     statistics.writeParameters()
