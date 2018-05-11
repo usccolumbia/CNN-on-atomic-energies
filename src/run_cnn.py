@@ -21,6 +21,7 @@ def CNNStructure(input,mini_batch_size,rng):
     activation   = hyppar.activation
     image_spec_x = hyppar.image_spec_x
     image_spec_y = hyppar.image_spec_y
+    n_out        = hyppar.n_out
 
     activation_function = []
     for i in range(NCL):
@@ -35,7 +36,6 @@ def CNNStructure(input,mini_batch_size,rng):
         else :
             print(str(i+1)+": UNKNOWN ACTIVATION!!!!!!!!")
 
-    # THIS IS NOT YET IMPLEMENTED TO FCL
     if (hyppar.fc_activation=="tanh"):
         fc_activation=T.tanh
     elif (hyppar.fc_activation=="relu"):
@@ -44,8 +44,10 @@ def CNNStructure(input,mini_batch_size,rng):
         fc_activation=T.nnet.elu
     elif (hyppar.fc_activation=="sigmoid"):
         fc_activation=T.nnet.sigmoid
-    #else :
-    #    print("FC: UNKNOWN ACTIVATION!!!!!!!!")
+    elif (hyppar.fc_activation=="softmax"):
+        fc_activation=T.nnet.softmax
+    else:
+        fc_activation=cnn.linear_activation
 
     cn_output = []
     params    = []
@@ -54,7 +56,7 @@ def CNNStructure(input,mini_batch_size,rng):
         [layer_output, layer_params] = cnn.convLayer(
             rng,
             data_input=input,
-            image_spec=(mini_batch_size, 1, image_spec_x[i], image_spec_y[i]),
+            image_spec=(mini_batch_size, Nchannel[i], image_spec_x[i], image_spec_y[i]),
             filter_spec=(Nchannel[i+1], Nchannel[i], filter[i][0], filter[i][1]),
             pool_size=(pool[i][0],pool[i][1]),
             activation=activation_function[i])
@@ -63,18 +65,29 @@ def CNNStructure(input,mini_batch_size,rng):
         params = params + layer_params
         input = layer_output
 
-    fc_layer_input = layer_output.flatten(2)
 
-    # The fully connected layer operates on a matrix of                                                          
-    [E_pred, fc_layer_params] = cnn.fullyConnectedLayer(
-        rng=rng,
-        data_input=fc_layer_input,
-        num_in=Nchannel[NCL]*image_spec_x[-1]*image_spec_y[-1],
-        num_out=1)
+    if(NCL>0):
+        fc_layer_input = layer_output.flatten(2)
+    else:
+        fc_layer_input = input.flatten(2)
 
+    fc_output = []
+    for i in range(NFC):
+        # The fully connected layer operates on a matrix of
+        [y_pred, fc_layer_params] = cnn.fullyConnectedLayer(
+            rng=rng,
+            data_input=fc_layer_input,
+            num_in=Nchannel[NCL]*image_spec_x[-1]*image_spec_y[-1],
+            num_out=n_out,
+            activation=fc_activation)
+
+        fc_output = fc_output + y_pred
+        params = params + fc_layer_params
+        fc_layer_input = y_pred
+        
     params = params + fc_layer_params
 
-    return E_pred, cn_output, params
+    return y_pred, cn_output, params
     
 
 def TrainCNN():
@@ -90,6 +103,7 @@ def TrainCNN():
         datapar.Xtest, datapar.Ytest,
         sample_size=hyppar.Ntest)
 
+    
     # Hyperparameters
     learning_rate   = hyppar.learning_rate
     num_epochs      = hyppar.Nepoch
@@ -120,7 +134,7 @@ def TrainCNN():
     x = T.matrix('x')
     # Target energies (1 x mini_batch_size)
     y = T.matrix('y')
-
+    
     print('***** Constructing model ***** ')
     
     # Reshaping tensor of mini_batch_size set of images into a
@@ -130,11 +144,17 @@ def TrainCNN():
     layer0_input = x.reshape((mini_batch_size,1,xdim,ydim))
 
     # Define the CNN function
-    E_pred,cn_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
-    
-    # Cost that is minimised during stochastic descent. Includes regularization
-    cost = cnn.MSE(y,E_pred)
+    y_pred,cn_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
 
+
+    # Class prediction in case of a classification task
+    if (hyppar.task=='classification'):
+        classes_pred=T.argmax(y_pred,axis=1)
+        error=cnn.class_errors(y_pred,y)
+        
+    # Cost that is minimised during stochastic descent. Includes regularization
+    cost = cnn.negative_log_lik(y_pred,y)#hyppar.cost_function(y_pred,y)
+    
     L2_reg=0
     for i in range(len(params)):
         L2_reg=L2_reg+T.mean(T.sqr(params[i][0]))
@@ -164,8 +184,21 @@ def TrainCNN():
                 mb_index * mini_batch_size:
                 (mb_index + 1) * mini_batch_size
             ]})
+    
+    valid_errors = theano.function(
+        [mb_index],
+        error,
+        givens={
+            x: valid_set_x[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ],
+            y: valid_set_y[
+                mb_index * mini_batch_size:
+                (mb_index + 1) * mini_batch_size
+            ]})
 
-
+    
     test_model = theano.function(
         [mb_index],
         cost,
@@ -181,7 +214,7 @@ def TrainCNN():
     
     predict = theano.function(
         [mb_index],
-        E_pred,
+        y_pred,
         givens={
             x : valid_set_x[
                 mb_index * mini_batch_size:
@@ -189,6 +222,16 @@ def TrainCNN():
                 
             ]})
 
+    predict_class = theano.function(
+        [mb_index],
+        classes_pred,
+        givens={
+            x : valid_set_x[
+                mb_index * mini_batch_size:
+                (mb_index+1) * mini_batch_size
+                
+            ]})
+    
     get_activations = theano.function(
         [],
         cn_output,
@@ -249,21 +292,30 @@ def TrainCNN():
             
             # Save training error
             train_error.append(float(cost_ij))
-            
-            valid_losses = [valid_model(i) for i in range(n_valid_batches)]
-            # Compute the mean prediction error across all the mini-batches.
-            valid_score = np.mean(valid_losses)
-            # Save validation error
-            valid_error.append(valid_score)
 
-            print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training error: "+str(cost_ij)+", validation error: "+str(valid_score))
-            
+            # Currently validation error depends on the type of task
+            if (hyppar.task=='regression'):
+                valid_losses = [valid_model(i) for i in range(n_valid_batches)]
+                # Compute the mean prediction error across all the mini-batches.
+                valid_score = np.mean(valid_losses)
+                print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
+            else:
+                valid_losses = [valid_errors(i) for i in range(n_valid_batches)]
+                # Compute the mean prediction error across all the mini-batches.
+                valid_score = np.mean(valid_losses)
+                print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation error: "+str(valid_score))
+                # Save validation error
+                valid_error.append(valid_score)
+                
             if (iter%20==0):
                 # Get predicted energies from validation set
                 E = np.zeros((n_valid_batches*mini_batch_size,1))
                 step=0
                 for i in range(n_valid_batches):
-                    buf = predict(i)
+                    if(hyppar.task=='regression'):
+                        buf = predict(i)
+                    else:
+                        buf = predict_class(i)
                     for j in range(mini_batch_size):
                         E[step,0]=buf[j]
                         step=step+1
