@@ -36,18 +36,20 @@ def CNNStructure(input,mini_batch_size,rng):
         else :
             print(str(i+1)+": UNKNOWN ACTIVATION!!!!!!!!")
 
-    if (hyppar.fc_activation=="tanh"):
-        fc_activation=T.tanh
-    elif (hyppar.fc_activation=="relu"):
-        fc_activation=T.nnet.relu
-    elif (hyppar.fc_activation=="elu"):
-        fc_activation=T.nnet.elu
-    elif (hyppar.fc_activation=="sigmoid"):
-        fc_activation=T.nnet.sigmoid
-    elif (hyppar.fc_activation=="softmax"):
-        fc_activation=T.nnet.softmax
-    else:
-        fc_activation=cnn.linear_activation
+    fc_activation=[]
+    for i in range(NFC):
+        if (hyppar.fc_activation[i]=="tanh"):
+            fc_activation.append(T.tanh)
+        elif (hyppar.fc_activation[i]=="relu"):
+            fc_activation.append(T.nnet.relu)
+        elif (hyppar.fc_activation[i]=="elu"):
+            fc_activation.append(T.nnet.elu)
+        elif (hyppar.fc_activation[i]=="sigmoid"):
+            fc_activation.append(T.nnet.sigmoid)
+        elif (hyppar.fc_activation[i]=="softmax"):
+            fc_activation.append(T.nnet.softmax)
+        else:
+            fc_activation=cnn.linear_activation
 
     cn_output = []
     params    = []
@@ -68,8 +70,10 @@ def CNNStructure(input,mini_batch_size,rng):
 
     if(NCL>0):
         fc_layer_input = layer_output.flatten(2)
+        num_in = Nchannel[NCL]*image_spec_x[-1]*image_spec_y[-1]
     else:
         fc_layer_input = input.flatten(2)
+        num_in = image_spec_x[0]*image_spec_y[0]
 
     fc_output = []
     for i in range(NFC):
@@ -77,16 +81,15 @@ def CNNStructure(input,mini_batch_size,rng):
         [y_pred, fc_layer_params] = cnn.fullyConnectedLayer(
             rng=rng,
             data_input=fc_layer_input,
-            num_in=len(fc_layer_input), # Is this unstylish? Maybe.
+            num_in=num_in, # Is this unstylish? Maybe.
             num_out=fc_out[i],
             activation=fc_activation[i])
 
+        num_in=fc_out[i]
         fc_output = fc_output + y_pred
         params = params + fc_layer_params
         fc_layer_input = y_pred
         
-    params = params + fc_layer_params
-
     return y_pred, cn_output, params
     
 
@@ -153,7 +156,7 @@ def TrainCNN():
         error=cnn.class_errors(y_pred,y)
         
     # Cost that is minimised during stochastic descent. Includes regularization
-    cost = cnn.negative_log_lik(y_pred,y)#hyppar.cost_function(y_pred,y)
+    cost = hyppar.cost_function(y_pred,y)
     
     L2_reg=0
     for i in range(len(params)):
@@ -184,20 +187,21 @@ def TrainCNN():
                 mb_index * mini_batch_size:
                 (mb_index + 1) * mini_batch_size
             ]})
-    
-    valid_errors = theano.function(
-        [mb_index],
-        error,
-        givens={
-            x: valid_set_x[
-                mb_index * mini_batch_size:
-                (mb_index + 1) * mini_batch_size
-            ],
-            y: valid_set_y[
-                mb_index * mini_batch_size:
-                (mb_index + 1) * mini_batch_size
-            ]})
 
+    if (hyppar.task=='classification'):
+        valid_errors = theano.function(
+            [mb_index],
+            error,
+            givens={
+                x: valid_set_x[
+                    mb_index * mini_batch_size:
+                    (mb_index + 1) * mini_batch_size
+                ],
+                y: valid_set_y[
+                    mb_index * mini_batch_size:
+                    (mb_index + 1) * mini_batch_size
+                ]})
+        
     
     test_model = theano.function(
         [mb_index],
@@ -222,20 +226,22 @@ def TrainCNN():
                 
             ]})
 
-    predict_class = theano.function(
-        [mb_index],
-        classes_pred,
-        givens={
-            x : valid_set_x[
-                mb_index * mini_batch_size:
-                (mb_index+1) * mini_batch_size
-                
+    if (hyppar.task=='classification'):
+        predict_class = theano.function(
+            [mb_index],
+            classes_pred,
+            givens={
+                x : valid_set_x[
+                    mb_index * mini_batch_size:
+                    (mb_index+1) * mini_batch_size
+                    
             ]})
-    
-    get_activations = theano.function(
-        [],
-        cn_output,
-        givens={x: valid_set_x[rset]})
+
+    if (hyppar.NCL>0):
+        get_activations = theano.function(
+            [],
+            cn_output,
+            givens={x: valid_set_x[rset]})
     
 
     # Creates a function that updates the model parameters by SGD.
@@ -286,9 +292,9 @@ def TrainCNN():
             
             if iter%10==0:
                 statistics.saveParameters(params)
-            if iter%2==0:
-                activations=get_activations()
-                statistics.saveActivations(activations)
+#            if iter%2==0:
+#                activations=get_activations()
+#                statistics.saveActivations(activations)
             
             # Save training error
             train_error.append(float(cost_ij))
