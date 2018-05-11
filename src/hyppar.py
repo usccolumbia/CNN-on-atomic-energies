@@ -180,7 +180,7 @@ def setStructureParameters():
     print('\n Number of convolutional layers      : '+str(NCL))
     print(' Number of fully connected layers    : '+str(NFC))
 
-    print('\n Shape of the input:')
+    print('\n Shape of the input (x,y,z):')
     print(in_x,in_y,in_z)
     print('\n')
 
@@ -196,9 +196,12 @@ def setStructureParameters():
         print('Output image1:')
         print(Nchannel[i+1],image_spec_x[i+1],image_spec_y[i+1])
         print('\n')
-        
-    print(' Fully connected layer activation   : '+fc_activation)
-        
+
+    for i in range(NFC):
+        print("***  FC layer "+ str(i+1)+" ***")
+        print('N_out:'+str(fc_out[i]) ) # Generalize!!!!!!!!!!!!
+        print(' Activation   : '+fc_activation[i])
+        print('\n')
 
 # parse: look value for keyword from input
 def parse(filename,varname):
@@ -390,6 +393,10 @@ def setInput(filename='input'):
     buffer = parse(filename,'NCL')
     if len(buffer) > 0:
         NCL = int(buffer[0])
+
+    buffer = parse(filename,'NFC')
+    if len(buffer) > 0:
+        NFC = int(buffer[0])
 
     buffer = parse(filename,'Nchannel')
     if len(buffer) > 0:
