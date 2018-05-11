@@ -151,11 +151,11 @@ def TrainCNN():
     # Cost that is minimised during stochastic descent. Includes regularization
     cost = hyppar.cost_function(y_pred,y)
     
-    L2_reg=0
-    for i in range(len(params)):
-        L2_reg=L2_reg+T.mean(T.sqr(params[i][0]))
+    #L2_reg=0
+    #for i in range(len(params)):
+    #    L2_reg=L2_reg+T.mean(T.sqr(params[i][0]))
 
-    cost=cost+reg*L2_reg
+    #cost=cost+reg*L2_reg
     
     # Creates a Theano function that computes the mistakes on the validation set.
     # This performs validation.
