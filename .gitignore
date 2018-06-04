@@ -10,3 +10,4 @@ venv/
 src/mnist.pkl.gz
 src/output
 input
+output
