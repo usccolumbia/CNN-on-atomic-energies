@@ -2,6 +2,8 @@ src/*.pyc
 src/*#
 src/*__pycache__*
 src/output
+tools/#*
+tools/*~
 *~
 venv/
 .cache/

@@ -11,7 +11,7 @@ A script tp plot FC activations.
 '''
 
 # Density of the iteration plots
-plot_period=5
+plot_period=1
 
 Narg = len(sys.argv)
 
@@ -25,14 +25,13 @@ for word in sys.argv:
         plot_true_dist=True
 
 A0 = np.load('activations_fclayer'+str(fclayer)+'.npy')
-
-Xdata=np.load('validation_features.npy') 
-
-Ydata=np.load('validation_targets.npy') 
+B0=np.load('validation.npy') # This is the validation set!
+Xdata=B0[0]
+Ydata=B0[1]
 
 # Specify which nodes to plot
 nodes=[]
-if(Narg>3):
+if(Narg>2):
     idx=0
     for i in range(3,Narg):
         nodes.append(int(sys.argv[i]))
@@ -44,14 +43,16 @@ Niter=len(A0)
 Nnodes=len(nodes)
 plt.ion()
 fig,ax=plt.subplots(1)
-
+print(nodes)
 for i in range(Niter):
     if(i%plot_period==0):
         ax.clear()
         ax.set_title('Iteration '+str(i)+'/'+str(Niter))
+        plt.hold(True)
         for j in range(Nnodes):
-            ax.plot(A0[i,nodes[j],:],'b-')
-        if(plot_true_dist):ax.plot(Ydata[:,0],'r-')
+            ax.plot(Xdata[:,0],A0[i,nodes[j],:])
+        if(plot_true_dist):ax.plot(Xdata[:,0],Ydata[:,0],'r-')
         fig.canvas.draw()
+        plt.hold(False)
         plt.pause(0.0002)
     
