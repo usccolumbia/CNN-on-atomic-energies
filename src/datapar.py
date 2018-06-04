@@ -94,6 +94,10 @@ def loadDataPoints():
     Xdata=np.zeros((Ndata,xdim,ydim))
     for i in np.arange(Ndata):
         X=np.loadtxt(datapath+'/Xdata/'+str(i))
+        if(xdim>1 and ydim==1):
+            XX=np.zeros((xdim,1))
+            XX[:,0]=X
+            X=XX
         Xdata[step,:,:]=X
         step=step+1
         
