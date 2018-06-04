@@ -37,6 +37,7 @@ in_z = 1
 fc_out1 = 1
 fc_out2 = 1
 fc_out3 = 1
+fc_out4 = 1
 # Number of convolutional layers
 NCL = 3
 # Number of chanels
@@ -111,6 +112,7 @@ def setStructureParameters():
     global fc_out1
     global fc_out2
     global fc_out3
+    global fc_out4
     global Nchannel
     
     # New global parameters:
@@ -159,6 +161,7 @@ def setStructureParameters():
     fc_out.append(fc_out1)
     fc_out.append(fc_out2)
     fc_out.append(fc_out3)
+    fc_out.append(fc_out4)
     
     
     image_spec_x = []
@@ -251,6 +254,7 @@ def setInput(filename='input'):
     global fc_out1
     global fc_out2
     global fc_out3# This and the next one: should they be the same?
+    global fc_out4
     global Nclass
     global NCL
     global Nchannel
@@ -419,6 +423,10 @@ def setInput(filename='input'):
     buffer = parse(filename,'fc_out3')
     if len(buffer) > 0:
         fc_out3 = int(buffer[0])
+                    
+    buffer = parse(filename,'fc_out4')
+    if len(buffer) > 0:
+        fc_out4 = int(buffer[0])
                     
         
     buffer = parse(filename,'NCL')
