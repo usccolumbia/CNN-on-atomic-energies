@@ -19,11 +19,13 @@ def writeParameters(dir="output"):
 
     # Use: hyppar module
     Nl           = hyppar.NCL
+    NFC          = hyppar.NFC
     Nc           = hyppar.Nchannel
     filter       = hyppar.filter
     image_spec_x = hyppar.image_spec_x
     image_spec_y = hyppar.image_spec_y
-
+    fc_out       = hyppar.fc_out
+    
     # Derived variables
     Niter   = len(w)
     
@@ -36,17 +38,32 @@ def writeParameters(dir="output"):
         np.save(dir+'/weights_convlayer_'+str(i),wim)
         np.save(dir+'/biases_convlayer_'+str(i),bim)
 
-        
-#    wfim = np.zeros((Niter,Nc[-1]*image_spec_x[-1]*image_spec_y[-1],1))
-#    bfim = np.zeros((Niter,))
-#    for i in range(Niter):
-#        wfim[i,:,:] = w[i][-1]
-#        bfim[i] = b[i][-1]
 
-#    np.save(dir+'/weights_FClayer_'+str(i),wfim)
-#    np.save(dir+'/biases_FClayer_'+str(i),bfim)
+    if (NFC==0):
+        return
 
+    if(Nl>0):
+        num_in = Nc[NCL]*image_spec_x[-1]*image_spec_y[-1]
+    else:
+        num_in = image_spec_x[0]*image_spec_y[0]
+
+
+    ind=0
+    num_out = fc_out[ind] 
+    for i in range(Nl,Nl+NFC):
+
+        wfc=np.zeros((Niter,num_in,num_out))
+        for j in range(Niter):
+            wfc[j,:,:]=w[j][i]
+        bfc=np.zeros((Niter,num_out))
+        for j in range(Niter):
+            bfc[j,:]=b[j][i]
+        np.save(dir+'/weights_fclayer'+str(ind),wfc)
+        np.save(dir+'/biases_fclayer'+str(ind),bfc)
+        ind=ind+1
+        num_in=num_out
         
+        num_out=fc_out[ind]
 
 def writeActivations(dir="output"):
     global conv_out
