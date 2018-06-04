@@ -10,6 +10,6 @@ venv/
 src/mnist.pkl.gz
 src/output
 input
-test/SINE_FUNCTION/output/*
-test/GAUSSIAN_MEAN/output/*
-test/PARABEL_CURVE/output/*
+/test/SINE_FUNCTION/output/*
+/test/GAUSSIAN_MEAN/output/*
+/test/PARABEL_CURVE/output/*
