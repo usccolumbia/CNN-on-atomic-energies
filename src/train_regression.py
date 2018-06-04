@@ -115,6 +115,10 @@ def TrainCNN():
 
     # Random set for following activations
     rset = range(mini_batch_size)#rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
+
+    # Save validation data, for comparing plots of data and predictions
+    np.save('output/validation_features',valid_set[0])
+    np.save('output/validation_targets',valid_set[1])
     
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
@@ -215,7 +219,8 @@ def TrainCNN():
             [],
             fc_output,
             givens={x: valid_set_x[rset]})
-        
+
+    
     # Creates a function that updates the model parameters by SGD.
     # The updates list is created by looping over all
     # (params[i], grads[i]) pairs.
@@ -246,6 +251,9 @@ def TrainCNN():
     train_error = []
     valid_error= []
 
+    # TODO:
+    # Write scripts to save validation data for plotting
+    
     statistics.saveParameters(params)
 
      # This is where we call the previously defined Theano functions.
@@ -278,7 +286,10 @@ def TrainCNN():
             valid_losses = [valid_model(i) for i in range(n_valid_batches)]
             # Compute the mean prediction error across all the mini-batches.
             valid_score = np.mean(valid_losses)
-            print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
+            # Save validation error
+            valid_error.append(valid_score)
+            
+            if(iter%100==0):print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
                             
             if (iter%20==0):
                 # Get predicted labels from validation set
@@ -305,4 +316,9 @@ def TrainCNN():
     statistics.saveParameters(params)
     statistics.writeParameters()
 
+    # Save Training and validation errors
+    Etrain=np.array(train_error)
+    Eval=np.array(valid_error)
+    np.save('output/train_error',Etrain)
+    np.save('output/valid_error',Eval)
  
