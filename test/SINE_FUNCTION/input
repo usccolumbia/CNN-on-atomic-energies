@@ -1,0 +1,77 @@
+################ Dataset info ######################
+# Datapath
+datapath               : /u/82/simulak1/unix/Desktop/deep_learning_for_atoms/CNN-on-atomic-energies/test/SINE_FUNCTION/data
+# Number of datapoints
+Ndata                  :  1887
+# Number of aug points
+Naug                   :  0
+# Training set size
+Ntrain                 :  629
+# Validation set size
+Nval                   :  629
+# Test set size
+Ntest                  :  629
+# Target type
+target_type            : float
+###################################################
+
+############### Training #########################
+# Training task: 'classification' or 'regression'
+task                   : regression
+####################################################
+
+############## Data accummulation##################
+accumulate_parameters     : 5
+accumulate_cn_activations : 5
+accumulate_fc_activations : 1
+Nsamples_fc               : 629
+accumulate_predictions    : 5
+##################################################
+
+################ Optimization #####################
+# Learning_rate
+learning_rate          :  0.005
+# Number of epochs
+Nepoch                 :  20000
+# Minibatch size
+mbs                    :  629
+####################################################
+
+
+
+################ Structure of CNN ##################
+# 2D input (Later: give as list)
+in_x                   :  1
+in_y                   :  1
+# Dimension of output
+fc_out1                  : 4
+fc_out2                  : 1
+# Number of convolutional layers
+NCL                    :  0
+# Number of channels
+Nchannel               :  9 9
+# Filters
+filter1                : 9 9
+filter2                : 5 5 
+filter3                : 5 5
+# Pooling
+pool1                  : 2 2
+pool2                  : 2 2
+pool3                  : 2 2
+# Activations  
+activation1            : relu
+activation2            : relu
+activation3            : tanh
+# Number of fully connected layers
+NFC                    : 2
+# Activations
+fc_activation1           : sigmoid
+fc_activation2           : lin
+cost_function           : MSE
+######################################################
+
+
+################ Regularization #######################
+reg                    :  0.0
+
+ 

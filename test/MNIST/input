@@ -1,0 +1,69 @@
+################ Dataset info ######################
+# Datapath
+datapath               : /u/82/simulak1/unix/Desktop/deep_learning_for_atoms/CNN-on-atomic-energies/test/MNIST/data
+# Number of datapoints
+Ndata                  :  6000
+# Number of aug points
+Naug                   :  0
+# Training set size
+Ntrain                 :  4000
+# Validation set size
+Nval                   :  1000
+# Test set size
+Ntest                  :  1000
+# Target type
+target_type            : int
+###################################################
+
+############### Training #########################
+# Training task: 'classification' or 'regression'
+task                   : classification
+# Num ber of classes
+Nclass                 : 10
+####################################################
+
+################ Optimization #####################
+# Learning_rate
+learning_rate          :  0.02
+# Number of epochs
+Nepoch                 :  5
+# Minibatch size
+mbs                    :  20
+####################################################
+
+
+
+################ Structure of CNN ##################
+# 2D input (Later: give as list)
+in_x                   :  28
+in_y                   :  28
+# Dimension of output
+n_out                  : 10
+# Number of convolutional layers
+NCL                    :  1
+# Number of channels
+Nchannel               :  9 9
+# Filters
+filter1                : 9 9
+filter2                : 5 5 
+filter3                : 5 5
+# Pooling
+pool1                  : 2 2
+pool2                  : 2 2
+pool3                  : 2 2
+# Activations  
+activation1            : relu
+activation2            : relu
+activation3            : tanh
+# Number of fully connected layers
+NFC                    : 1
+# Activations
+fc_activation           : softmax
+cost_function           : CC
+######################################################
+
+
+################ Regularization #######################
+reg                    :  0.0
+
+ 

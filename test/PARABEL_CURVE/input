@@ -1,0 +1,79 @@
+################ Dataset info ######################
+# Datapath
+datapath               : /u/82/simulak1/unix/Desktop/deep_learning_for_atoms/CNN-on-atomic-energies/test/PARABEL_CURVE/data
+# Number of datapoints
+Ndata                  :  3360
+# Number of aug points
+Naug                   :  0
+# Training set size
+Ntrain                 :  1120
+# Validation set size
+Nval                   :  1120
+# Test set size
+Ntest                  :  1120
+# Target type
+target_type            : float
+###################################################
+
+############### Training #########################
+# Training task: 'classification' or 'regression'
+task                   : regression
+####################################################
+
+############## Data accummulation##################
+accumulate_parameters     : 200
+accumulate_cn_activations : 50000000
+accumulate_fc_activations : 200
+Nsamples_fc               : 1120
+accumulate_predictions    : 5000000
+##################################################
+
+################ Optimization #####################
+# Learning_rate
+learning_rate          :  0.05
+# Number of epochs
+Nepoch                 :  50000 # 50000: This is enough
+# Minibatch size
+mbs                    :  1120
+####################################################
+
+
+
+################ Structure of CNN ##################
+# 2D input (Later: give as list)
+in_x                   :  1
+in_y                   :  1
+# Dimension of output
+fc_out1                  : 128
+fc_out2                  : 1
+fc_out3                  : 1
+# Number of convolutional layers
+NCL                    :  0
+# Number of channels
+Nchannel               :  9 9
+# Filters
+filter1                : 9 9
+filter2                : 5 5 
+filter3                : 5 5
+# Pooling
+pool1                  : 2 2
+pool2                  : 2 2
+pool3                  : 2 2
+# Activations  
+activation1            : relu
+activation2            : relu
+activation3            : tanh
+# Number of fully connected layers
+NFC                    : 2
+# Activations
+fc_activation1           : tanh
+fc_activation2           : sigmscfaoid
+fc_activation3           : lin
+cost_function           : MSE
+######################################################
+
+
+################ Regularization #######################
+reg                    :  0.0
+
+ 
