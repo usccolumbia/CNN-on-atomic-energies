@@ -91,7 +91,7 @@ def test_convLayer():
     train_size = 6000
     test_set_x, test_set_y_float, test_set = load_data.shared_dataset(
         test_x,test_y,
-        sample_size=train_size//3
+        sample_size=train_size/3
         )
     train_set_x, train_set_y_float, train_set = load_data.shared_dataset(
         train_x,train_y,
