@@ -117,8 +117,8 @@ def TrainCNN():
     rset = range(mini_batch_size)#rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
 
     # Save validation data, for comparing plots of data and predictions
-    np.save('output/validation_features',valid_set[0])
-    np.save('output/validation_targets',valid_set[1])
+    np.save(hyppar.current_dir+'/output/validation_features',valid_set[0])
+    np.save(hyppar.current_dir+'/output/validation_targets',valid_set[1])
     
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
@@ -291,7 +291,7 @@ def TrainCNN():
             
             if(iter%100==0):print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
                             
-            if (iter%20==0):
+            if (iter%20==hyppar.accumulate_predictions):
                 # Get predicted labels from validation set
                 E = np.zeros((n_valid_batches*mini_batch_size,1))
                 step=0
@@ -300,7 +300,7 @@ def TrainCNN():
                     for j in range(mini_batch_size):
                         E[step,0]=buf[j]
                         step=step+1
-                np.savetxt('output/E_pred_'+str(iter)+'.txt',E)
+                np.savetxt(hyppar.current_dir+'/output/E_pred_'+str(iter)+'.txt',E)
 
     test_losses = [test_model(i) for i in range(n_test_batches)]
     # Compute the mean prediction error across all the mini-batches.
@@ -311,14 +311,17 @@ def TrainCNN():
 
     if(hyppar.NCL>0):statistics.writeActivations()
     if(hyppar.NFC>0):statistics.writefcActivations()
-    
+
     # Return values:
     statistics.saveParameters(params)
     statistics.writeParameters()
 
+    # Save final validation error for testing purposes
+    hyppar.final_valid_error=valid_score
+    
     # Save Training and validation errors
     Etrain=np.array(train_error)
     Eval=np.array(valid_error)
-    np.save('output/train_error',Etrain)
-    np.save('output/valid_error',Eval)
+    np.save(hyppar.current_dir+'/output/train_error',Etrain)
+    np.save(hyppar.current_dir+'/output/valid_error',Eval)
  

@@ -13,6 +13,8 @@ print('******* Import complete *******')
 
 rd.seed()
 
+hyppar.current_dir=sys.path[0]
+
 # Read input file
 print("Reading input data...\n")
 hyppar.setInput()
@@ -33,3 +35,5 @@ if(hyppar.task=='classification'):
     train_classification.TrainCNN()
 else:
     train_regression.TrainCNN()
+
+
