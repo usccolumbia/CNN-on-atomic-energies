@@ -24,6 +24,7 @@ def test_SINE():
     # Read input file
     print("Reading input data...\n")
     hyppar.setInput(orig_path+"/input")
+    hyppar.datapath=hyppar.current_dir+"/data"
     
     # Set up neural network structure
     print("\n Setting up CNN structure...")
