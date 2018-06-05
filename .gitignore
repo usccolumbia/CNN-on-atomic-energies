@@ -1,14 +1,11 @@
 src/*.pyc
 src/*#
 src/*__pycache__*
-src/output
 tools/#*
 tools/*~
 *~
 venv/
 .cache/
 src/mnist.pkl.gz
-src/output
-/test/SINE_FUNCTION/output/*
-/test/GAUSSIAN_MEAN/output/*
-/test/PARABEL_CURVE/output/*
+*txt
+*npy
