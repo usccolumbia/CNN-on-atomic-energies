@@ -8,12 +8,12 @@ import train_regression
 import train_classification
 import hyppar
 import datapar
-
+import argument_parser
 print('******* Import complete *******')
 
 rd.seed()
 
-hyppar.current_dir=sys.path[0]
+argument_parser.parseArgs(sys.argv,sys.path[0])
 
 # Read input file
 print("Reading input data...\n")

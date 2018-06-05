@@ -29,7 +29,7 @@ def test_SINE():
     # Set up neural network structure
     print("\n Setting up CNN structure...")
     hyppar.setStructureParameters()
-    
+
     # Handle dataset
     print("Loading dataset...")
     Ntrain   = hyppar.Ntrain

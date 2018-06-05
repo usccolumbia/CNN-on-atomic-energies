@@ -11,7 +11,7 @@ A script tp plot FC activations.
 '''
 
 # Density of the iteration plots
-plot_period=5
+plot_period=1
 
 Narg = len(sys.argv)
 

@@ -39,7 +39,7 @@ def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
         print('Sample size too small!')
         return
     try:
-        indices = rd.sample(range(0, data_y.shape[0]), sample_size)
+        indices = range(data_y.shape[0])#rd.sample(range(0, data_y.shape[0]), sample_size)
     except ValueError:
         print('Sample size exceeds data size.')
     data_x = data_x[indices, :]
