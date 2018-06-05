@@ -35,8 +35,8 @@ def writeParameters(dir="output"):
         for j in range(Niter):
             wim[i,:,:,:,:] = w[j][i]
             bim[i,:]       = b[j][i]
-        np.save(dir+'/weights_convlayer_'+str(i),wim)
-        np.save(dir+'/biases_convlayer_'+str(i),bim)
+        np.save(hyppar.current_dir+'/'+dir+'/weights_convlayer_'+str(i),wim)
+        np.save(hyppar.current_dir+'/'+dir+'/biases_convlayer_'+str(i),bim)
 
 
     if (NFC==0):
@@ -58,8 +58,8 @@ def writeParameters(dir="output"):
         bfc=np.zeros((Niter,num_out))
         for j in range(Niter):
             bfc[j,:]=b[j][i]
-        np.save(dir+'/weights_fclayer'+str(ind),wfc)
-        np.save(dir+'/biases_fclayer'+str(ind),bfc)
+        np.save(hyppar.current_dir+'/'+dir+'/weights_fclayer'+str(ind),wfc)
+        np.save(hyppar.current_dir+'/'+dir+'/biases_fclayer'+str(ind),bfc)
         ind=ind+1
         num_in=num_out
         
@@ -83,7 +83,7 @@ def writeActivations(dir="output"):
             image = np.zeros((Niter,Nc[i+1],image_spec_x[i+1], image_spec_y[i+1]))
             for k in range(Niter):
                 image[k,:,:,:] = conv_out[k][j][i] 
-            np.save(dir+'/activations_layer'+str(i)+'_sample'+str(j),image)
+            np.save(hyppar.current_dir+'/'+dir+'/activations_layer'+str(i)+'_sample'+str(j),image)
         
 def writefcActivations(dir="output"):
     global fc_out
@@ -99,7 +99,7 @@ def writefcActivations(dir="output"):
         for j in range(Nnode):
             for k in range(Niter):
                 image[k,j,:] = fc_out[k][i][j]
-        np.save(dir+'/activations_fclayer'+str(i),image)
+        np.save(hyppar.current_dir+'/'+dir+'/activations_fclayer'+str(i),image)
 
             
 def saveActivations(activations):
