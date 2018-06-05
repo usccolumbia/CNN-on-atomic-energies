@@ -9,3 +9,6 @@ venv/
 src/mnist.pkl.gz
 *txt
 *npy
+test/SINE_FUNCTION/Statistics/*
+test/PARABEL_CURVE/Statistics/*
+test/GAUSSIAN_MEAN/Statistics/*
