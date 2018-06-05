@@ -3,6 +3,22 @@ import hyppar
 import load_data
 import random as rd
 
+# Training set
+global Xtrain
+# Training set labels
+global Ytrain
+# Validation set
+global Xval
+# Validation set labels
+global Yval
+# Test set features
+global Xtest
+# Test set labels
+global Ytest
+
+global Xdata
+global Ydata
+
 def splitDataset():
     '''
     Splits dataset into training and validation sets based on earlier

@@ -32,11 +32,30 @@ def test_SINE():
     
     # Handle dataset
     print("Loading dataset...")
-    datapar.loadDataPoints()
-    
-    # Define training, validation and test sets
-    print("Splitting dataset...")
-    datapar.splitDataset()
+    Ntrain   = hyppar.Ntrain
+    Nval     = hyppar.Nval
+    Ntest    = hyppar.Ntest
+    datapath = hyppar.datapath
+    xdim     = hyppar.in_x
+    ydim     = hyppar.in_y
+
+    datapar.Xtrain=np.zeros((Ntrain,xdim*ydim))
+    datapar.Ytrain=np.zeros((Ntrain,1))
+    datapar.Xval=np.zeros((Nval,xdim*ydim))
+    datapar.Yval=np.zeros((Nval,1))
+    datapar.Xtest=np.zeros((Ntest,xdim*ydim))
+    datapar.Ytest=np.zeros((Ntest,1))
+
+    for i in range(Ntrain):
+        x=i*2*3.14/Ntrain
+        y=np.sin(x)
+        datapar.Xtrain[i,0]=x
+        datapar.Ytrain[i,0]=y
+        datapar.Xval[i,0]=x
+        datapar.Yval[i,0]=y
+        datapar.Xtest[i,0]=x
+        datapar.Ytest[i,0]=y
+                                
     
     if(hyppar.task=='classification'):
         train_classification.TrainCNN()
