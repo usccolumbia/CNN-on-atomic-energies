@@ -1,5 +1,4 @@
 import numpy as np
-import datapar
 import theano
 import theano.tensor as T
 import random as rd

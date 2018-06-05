@@ -1,3 +1,11 @@
+# First, fool the test script that we are in src folder
+import sys
+split_path = sys.path[0].split('/')
+newpath=""
+for i in range(len(split_path)-2):
+    newpath=newpath+'/'+split_path[i]
+newpath=newpath+'/src'
+sys.path[0] = newpath
 import theano
 import theano.tensor as T
 import numpy as np
@@ -5,8 +13,8 @@ import six.moves.cPickle as pickle
 import gzip
 import os
 import random as rd
-import ../../src/load_data
-import ../../cnn
+import load_data
+import cnn
 
 def test_RMSLE():
     A=np.ones((2,1))
@@ -73,13 +81,15 @@ def test_fullyConnectedLayer():
         rng=rng,
         data_input=x,
         num_in=1,
-        num_out=4)
+        num_out=4,
+        activation=T.nnet.sigmoid)
 
     [y_pred_lin, params_2] = cnn.fullyConnectedLayer(
         rng=rng,
         data_input=T.tanh(hout),
         num_in=4,
-        num_out=1)
+        num_out=1,
+        activation=cnn.linear_activation)
     y_pred=T.tanh(y_pred_lin)
 
     cost=cnn.MSE(y,y_pred)

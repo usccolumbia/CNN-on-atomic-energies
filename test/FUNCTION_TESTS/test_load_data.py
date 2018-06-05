@@ -1,9 +1,17 @@
+# First, fool the test script that we are in src folder
+import sys
+split_path = sys.path[0].split('/')
+newpath=""
+for i in range(len(split_path)-2):
+    newpath=newpath+'/'+split_path[i]
+newpath=newpath+'/src'
+sys.path[0] = newpath
 import numpy as np
 from numpy import linalg as LA
 import theano
 import theano.tensor as T
 import random as rd
-import ../../load_data
+import load_data
 
 
 
