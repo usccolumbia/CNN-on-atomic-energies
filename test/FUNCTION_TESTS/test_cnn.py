@@ -5,8 +5,8 @@ import six.moves.cPickle as pickle
 import gzip
 import os
 import random as rd
-import load_data
-import cnn
+import ../../src/load_data
+import ../../cnn
 
 def test_RMSLE():
     A=np.ones((2,1))

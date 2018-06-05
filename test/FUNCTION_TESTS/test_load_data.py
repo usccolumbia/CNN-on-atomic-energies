@@ -3,7 +3,7 @@ from numpy import linalg as LA
 import theano
 import theano.tensor as T
 import random as rd
-import load_data
+import ../../load_data
 
 
 
