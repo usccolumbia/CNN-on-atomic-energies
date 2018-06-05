@@ -2,7 +2,6 @@ import theano
 import theano.tensor as T
 import numpy as np
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
-import matplotlib.pyplot as plt
 import random as rd
 import cnn
 import hyppar
