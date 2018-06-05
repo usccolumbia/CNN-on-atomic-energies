@@ -13,7 +13,7 @@ b=[]
 conv_out = []
 fc_out   = []
 
-def writeParameters(dir="output"):
+def writeParameters(dir="Statistics"):
     global w
     global b
 
@@ -65,7 +65,7 @@ def writeParameters(dir="output"):
         
         num_out=fc_out[ind]
 
-def writeActivations(dir="output"):
+def writeActivations(dir="Statistics"):
     global conv_out
 
     # Use: hyppar module
@@ -85,7 +85,7 @@ def writeActivations(dir="output"):
                 image[k,:,:,:] = conv_out[k][j][i] 
             np.save(hyppar.current_dir+'/'+dir+'/activations_layer'+str(i)+'_sample'+str(j),image)
         
-def writefcActivations(dir="output"):
+def writefcActivations(dir="Statistics"):
     global fc_out
     NFC = hyppar.NFC
 

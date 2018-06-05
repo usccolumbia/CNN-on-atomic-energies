@@ -116,8 +116,8 @@ def TrainCNN():
     rset = range(mini_batch_size)#rd.sample(range(valid_set_x.get_value(borrow=True).shape[0]),mini_batch_size)
 
     # Save validation data, for comparing plots of data and predictions
-    np.save(hyppar.current_dir+'/output/validation_features',valid_set[0])
-    np.save(hyppar.current_dir+'/output/validation_targets',valid_set[1])
+    np.save(hyppar.current_dir+'/Statistics/validation_features',valid_set[0])
+    np.save(hyppar.current_dir+'/Statistics/validation_targets',valid_set[1])
     
     # Seeding the random number generator
     rng = np.random.RandomState(23455)
@@ -299,7 +299,7 @@ def TrainCNN():
                     for j in range(mini_batch_size):
                         E[step,0]=buf[j]
                         step=step+1
-                np.savetxt(hyppar.current_dir+'/output/E_pred_'+str(iter)+'.txt',E)
+                np.savetxt(hyppar.current_dir+'/Statistics/E_pred_'+str(iter)+'.txt',E)
 
     test_losses = [test_model(i) for i in range(n_test_batches)]
     # Compute the mean prediction error across all the mini-batches.
@@ -321,6 +321,6 @@ def TrainCNN():
     # Save Training and validation errors
     Etrain=np.array(train_error)
     Eval=np.array(valid_error)
-    np.save(hyppar.current_dir+'/output/train_error',Etrain)
-    np.save(hyppar.current_dir+'/output/valid_error',Eval)
+    np.save(hyppar.current_dir+'/Statistics/train_error',Etrain)
+    np.save(hyppar.current_dir+'/Statistics/valid_error',Eval)
  
