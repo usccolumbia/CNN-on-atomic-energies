@@ -1,6 +1,7 @@
 import cnn
 ###### DEFAULT VALUES: ###############
 datapath = "/wrk/krsimula/DONOTREMOVE/NEURAL_NETWORKS/CNN-on-atomic-energies/"
+current_dir= "."
 # Number of datapoints
 Ndata = 2200
 # Number of aug points
@@ -21,6 +22,8 @@ Nepoch = 10
 mbs = 20
 # Regularization
 reg = 0.001
+
+final_valid_error=0
 
 accumulate_parameters     = 20
 accumulate_cn_activations = 20
