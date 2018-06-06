@@ -2,15 +2,15 @@
 # Datapath
 datapath               : data
 # Number of datapoints
-Ndata                  :  3360
+Ndata                  :  336
 # Number of aug points
 Naug                   :  0
 # Training set size
-Ntrain                 :  1120
+Ntrain                 :  112
 # Validation set size
-Nval                   :  1120
+Nval                   :  112
 # Test set size
-Ntest                  :  1120
+Ntest                  :  112
 # Target type
 target_type            : float
 ###################################################
@@ -21,20 +21,20 @@ task                   : regression
 ####################################################
 
 ############## Data accummulation##################
-accumulate_parameters     : 99999910
-accumulate_cn_activations : 90999999910
-accumulate_fc_activations : 2999900
+accumulate_parameters     : 109999999999
+accumulate_cn_activations : 999999
+accumulate_fc_activations : 109999999999999
 Nsamples_fc               : 2
-accumulate_predictions    : 9999999910
+accumulate_predictions    : 99999999
 ##################################################
 
 ################ Optimization #####################
 # Learning_rate
-learning_rate          :  0.1  #0.05
+learning_rate          :  0.1
 # Number of epochs
-Nepoch                 :  40000 # 50000: This is enough
+Nepoch                 :  20000
 # Minibatch size
-mbs                    :  1120
+mbs                    :  112
 ####################################################
 
 
@@ -44,7 +44,7 @@ mbs                    :  1120
 in_x                   :  1
 in_y                   :  1
 # Dimension of output
-fc_out1                  : 64 # 128
+fc_out1                  : 128 # 64
 fc_out2                  : 1
 fc_out3                  : 1
 # Number of convolutional layers

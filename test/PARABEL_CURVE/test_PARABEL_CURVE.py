@@ -31,9 +31,9 @@ def test_SINE():
     print("\n Setting up CNN structure...")
     hyppar.setStructureParameters()
     
-    x=np.zeros((len(np.arange(-28,28,0.05)),1))
+    x=np.zeros((len(np.arange(-28,28,0.5)),1))
     N=len(x)
-    x[:,0]=np.arange(-28,28,0.05)
+    x[:,0]=np.arange(-28,28,0.5)
     datapar.Xdata=np.zeros((3*N,1,1))
     for i in range(N):
         datapar.Xdata[i,0,0]     =x[i]
@@ -53,7 +53,7 @@ def test_SINE():
     else:
         train_regression.TrainCNN()
 
-    assert(hyppar.final_valid_error<900)
+    assert(hyppar.final_valid_error<400)
     statistics.w=[]
     statistics.b=[]
     statistics.conv_out=[]
