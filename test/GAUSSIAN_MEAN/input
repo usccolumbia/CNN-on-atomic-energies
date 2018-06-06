@@ -1,0 +1,79 @@
+################ Dataset info ######################
+# Datapath
+datapath               : /u/82/simulak1/unix/Desktop/deep_learning_for_atoms/CNN-on-atomic-energies/test/GAUSSIAN_MEAN/data
+# Number of datapoints
+Ndata                  :  1500
+# Number of aug points
+Naug                   :  0
+# Training set size
+Ntrain                 :  500
+# Validation set size
+Nval                   :  500
+# Test set size
+Ntest                  :  500
+# Target type
+target_type            : float
+###################################################
+
+############### Training #########################
+# Training task: 'classification' or 'regression'
+task                   : regression
+####################################################
+
+############## Data accummulation##################
+accumulate_parameters     : 100
+accumulate_cn_activations : 50000000
+accumulate_fc_activations : 100
+Nsamples_fc               : 500
+accumulate_predictions    : 5000000
+##################################################
+
+################ Optimization #####################
+# Learning_rate
+learning_rate          :  0.0005
+# Number of epochs
+Nepoch                 :  25000
+# Minibatch size
+mbs                    :  500
+####################################################
+
+
+
+################ Structure of CNN ##################
+# 2D input (Later: give as list)
+in_x                   :  11
+in_y                   :  1
+# Dimension of output
+fc_out1                  : 11 # 11
+fc_out2                  : 1
+fc_out3                  : 1
+# Number of convolutional layers
+NCL                    :  0
+# Number of channels
+Nchannel               :  9 9
+# Filters
+filter1                : 9 9
+filter2                : 5 5 
+filter3                : 5 5
+# Pooling
+pool1                  : 2 2
+pool2                  : 2 2
+pool3                  : 2 2
+# Activations  
+activation1            : relu
+activation2            : relu
+activation3            : tanh
+# Number of fully connected layers
+NFC                    : 2
+# Activations
+fc_activation1           : sigmoid #Sigmoid
+fc_activation2           : Lin
+fc_activation3           : lin
+cost_function           : MSE
+######################################################
+
+
+################ Regularization #######################
+reg                    :  0.0
+
+ 
