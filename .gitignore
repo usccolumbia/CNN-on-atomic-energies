@@ -11,4 +11,8 @@ src/mnist.pkl.gz
 *npy
 test/SINE_FUNCTION/data
 test/PARABEL_CURVE/data
-dtest/GAUSSIAN_MEAN/Statistics/*
+test/SINE_FUNCTION/Statistics
+test/PARABEL_CURVE/Statistics
+test/GAUSSIAN_MEAN/Statistics
+*__pycache__*
+
