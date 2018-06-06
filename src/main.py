@@ -9,6 +9,7 @@ import train_classification
 import hyppar
 import datapar
 import argument_parser
+import statistics
 print('******* Import complete *******')
 
 rd.seed()
@@ -31,9 +32,11 @@ datapar.loadDataPoints()
 print("Splitting dataset...")
 datapar.splitDataset()
 
+# Train
 if(hyppar.task=='classification'):
     train_classification.TrainCNN()
 else:
     train_regression.TrainCNN()
 
-
+# Save accumulated data 
+statistics.saveAll()

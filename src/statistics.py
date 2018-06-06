@@ -13,6 +13,17 @@ b=[]
 conv_out = []
 fc_out   = []
 
+def saveAll():
+    '''
+    Writes everything there is to output file.
+    '''
+    global w
+    
+    if(len(w)>1):writeParameters()
+    if(hyppar.NCL>0):writeActivations()
+    if(hyppar.NFC>0):writefcActivations()
+    
+    
 def writeParameters(dir="Statistics"):
     global w
     global b

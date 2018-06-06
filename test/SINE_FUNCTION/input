@@ -21,11 +21,11 @@ task                   : regression
 ####################################################
 
 ############## Data accummulation##################
-accumulate_parameters     : 999999999999999
+accumulate_parameters     : 10999999999999999
 accumulate_cn_activations : 999999999999999
-accumulate_fc_activations : 999999999999999
-Nsamples_fc               : 2
-accumulate_predictions    : 999999999999999
+accumulate_fc_activations : 10999999999999
+Nsamples_fc               : 62
+accumulate_predictions    : 9999999999
 ##################################################
 
 ################ Optimization #####################

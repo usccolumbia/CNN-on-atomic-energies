@@ -308,13 +308,9 @@ def TrainCNN():
     test_error = test_score
     print("Test error: "+str(test_error))
 
-    if(hyppar.NCL>0):statistics.writeActivations()
-    if(hyppar.NFC>0):statistics.writefcActivations()
-
     # Return values:
     statistics.saveParameters(params)
-    statistics.writeParameters()
-
+    
     # Save final validation error for testing purposes
     hyppar.final_valid_error=valid_score
     
