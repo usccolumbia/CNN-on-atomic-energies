@@ -53,7 +53,7 @@ def test_SINE():
     else:
         train_regression.TrainCNN()
 
-    assert(hyppar.final_valid_error<400)
+    assert(hyppar.final_valid_error<8000)
     statistics.w=[]
     statistics.b=[]
     statistics.conv_out=[]
