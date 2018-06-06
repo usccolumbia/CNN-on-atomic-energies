@@ -1,4 +1,4 @@
-src/*.pyc
+.pyc
 src/*#
 src/*__pycache__*
 tools/#*
