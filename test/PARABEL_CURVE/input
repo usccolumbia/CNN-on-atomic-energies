@@ -32,7 +32,7 @@ accumulate_predictions    : 99999999
 # Learning_rate
 learning_rate          :  0.1
 # Number of epochs
-Nepoch                 :  20000
+Nepoch                 :  21000
 # Minibatch size
 mbs                    :  112
 ####################################################
