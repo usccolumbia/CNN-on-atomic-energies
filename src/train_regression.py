@@ -151,6 +151,12 @@ def TrainCNN():
     # Define the CNN function
     y_pred,cn_output,fc_output,params=CNNStructure(layer0_input,mini_batch_size,rng)
 
+    # Get predicted classes and prediction error (accuracy)
+    if(hyppar.task=='classification'):
+        classes_pred=T.argmax(y_pred,axis=1)
+        error=cnn.class_errors(y_pred,y)
+        
+    
     # Cost that is minimised during stochastic descent. Includes regularization
     cost = hyppar.cost_function(y_pred,y)
     
@@ -170,7 +176,7 @@ def TrainCNN():
     # and we use givens to speed up the GPU. We swap the input index with a
     # slice corresponding to the mini-batch of the dataset to use.
     
-    # mb_index is the mini_batch_index
+    # Evaluate the cost on the validation set
     valid_model = theano.function(
         [mb_index],
         cost,
@@ -184,6 +190,7 @@ def TrainCNN():
                 (mb_index + 1) * mini_batch_size
             ]})
 
+    # Evaluate the cost on the test set
     test_model = theano.function(
         [mb_index],
         cost,
@@ -196,7 +203,9 @@ def TrainCNN():
                 mb_index * mini_batch_size:
                 (mb_index + 1) * mini_batch_size
             ]})
-    
+
+    # Obtain predictions from the final layer (Currently only FC layers allowed)
+    # TODO: Mkae it possible to have convlayer output
     predict = theano.function(
         [mb_index],
         y_pred,
@@ -207,19 +216,47 @@ def TrainCNN():
                 
             ]})
 
+    # Get list of convlayer activation tensors
     if (hyppar.NCL>0):
         get_activations = theano.function(
             [],
             cn_output,
             givens={x: valid_set_x[rset]})
-    
+
+    # Get list of FC layer activation tensors
     if(hyppar.NFC>0):
         get_fc_activations = theano.function(
             [],
             fc_output,
             givens={x: valid_set_x[rset]})
 
-    
+    # Obtain the error percentage of classification on the validation set
+    if(hyppar.task=='classification'):
+        valid_errors = theano.function(
+            [mb_index],
+            error,
+            givens={
+                x: valid_set_x[
+                    mb_index * mini_batch_size:
+                    (mb_index + 1) * mini_batch_size
+                ],
+                y: valid_set_y[
+                    mb_index * mini_batch_size:
+                    (mb_index + 1) * mini_batch_size
+                ]})
+
+    # Obtain the predicted classes
+    if(hyppar.task=='classification'):
+        predict_class = theano.function(
+            [mb_index],
+            classes_pred,
+            givens={
+                x : valid_set_x[
+                    mb_index * mini_batch_size:
+                    (mb_index+1) * mini_batch_size
+                    
+                ]})
+
     # Creates a function that updates the model parameters by SGD.
     # The updates list is created by looping over all
     # (params[i], grads[i]) pairs.

@@ -361,6 +361,7 @@ def setInput(filename='input'):
     task_buffer = parse(filename,'task')
     if len(task_buffer) > 0:
         task = task_buffer[0]
+        if not(task=='regression' or task=='classification'):print("ERROR: Task specified incorrectly!")
 
     if(task=='classification'):
         Nclass_buffer = parse(filename,'Nclass')
