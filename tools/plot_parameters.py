@@ -16,7 +16,7 @@ ind = 0
 layer_speficied = False
 indices_specified=False
 layer_type_specified=False
-plot_density=100
+plot_density=1
 for word in cmd:
     if word[0]=="-":
         # Specify layer

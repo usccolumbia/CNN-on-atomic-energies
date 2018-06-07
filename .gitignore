@@ -15,4 +15,5 @@ test/SINE_FUNCTION/Statistics
 test/PARABEL_CURVE/Statistics
 test/GAUSSIAN_MEAN/Statistics
 *__pycache__*
+test/PARABEL_CURVE/data/Xdata
 
