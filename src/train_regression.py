@@ -155,6 +155,7 @@ def TrainCNN():
     if(hyppar.task=='classification'):
         classes_pred=T.argmax(y_pred,axis=1)
         error=cnn.class_errors(y_pred,y)
+        #        real_pred=T.argmax(y,axis=1)
         
     
     # Cost that is minimised during stochastic descent. Includes regularization
@@ -285,11 +286,9 @@ def TrainCNN():
     valid_score = np.mean(valid_losses)
 
     train_error = []
+    valid_cost = []
     valid_error= []
 
-    # TODO:
-    # Write scripts to save validation data for plotting
-    
     statistics.saveParameters(params)
 
      # This is where we call the previously defined Theano functions.
@@ -323,18 +322,27 @@ def TrainCNN():
             # Compute the mean prediction error across all the mini-batches.
             valid_score = np.mean(valid_losses)
             # Save validation error
-            valid_error.append(valid_score)
+            valid_cost.append(valid_score)
+
+            # Classification errors
+            if(hyppar.task=='classification'):
+                # Currently validation error depends on the type of task
+                valid_preds = [valid_errors(i) for i in range(n_valid_batches)]
+                # Compute the mean prediction error across all the mini-batches.
+                valid_pred_score = np.mean(valid_preds)
+                # Save validation error
+                valid_error.append(valid_score)
             
-            if(iter%100==0):print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_score))
+            if(iter%100==0):print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_pred_score))
                             
-            if (iter%20==hyppar.accumulate_predictions):
+            if (iter%hyppar.accumulate_predictions==0):
                 # Get predicted labels from validation set
-                E = np.zeros((n_valid_batches*mini_batch_size,1))
+                E = np.zeros((n_valid_batches*mini_batch_size,hyppar.fc_out[hyppar.NFC-1]))
                 step=0
                 for i in range(n_valid_batches):
                     buf = predict(i)
                     for j in range(mini_batch_size):
-                        E[step,0]=buf[j]
+                        E[step,:]=buf[j]
                         step=step+1
                 np.savetxt(hyppar.current_dir+'/Statistics/E_pred_'+str(iter)+'.txt',E)
 
@@ -353,7 +361,7 @@ def TrainCNN():
     
     # Save Training and validation errors
     Etrain=np.array(train_error)
-    Eval=np.array(valid_error)
+    Eval=np.array(valid_cost)
     np.save(hyppar.current_dir+'/Statistics/train_error',Etrain)
     np.save(hyppar.current_dir+'/Statistics/valid_error',Eval)
  

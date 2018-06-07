@@ -33,10 +33,10 @@ print("Splitting dataset...")
 datapar.splitDataset()
 
 # Train
-if(hyppar.task=='classification'):
-    train_classification.TrainCNN()
-else:
-    train_regression.TrainCNN()
+#if(hyppar.task=='classification'):
+#    train_classification.TrainCNN()
+#else:
+train_regression.TrainCNN()
 
 # Save accumulated data 
 statistics.saveAll()

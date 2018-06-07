@@ -213,7 +213,7 @@ def categorical_cross_entropy(y_pred,y):
     0-D value
     '''
 
-    return T.sum(T.nnet.categorical_crossentropy(y_pred,y))
+    return T.mean(T.nnet.categorical_crossentropy(y_pred,y))
     
 
 def class_errors(y_pred,y):

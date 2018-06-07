@@ -34,7 +34,7 @@ def RandomSort(X,sigma):
 
 def shared_dataset(data_x, data_y, sample_size=2400, borrow=True):
     rd.seed(23455)
-    indices = 0
+
     if (sample_size < 0):
         print('Sample size too small!')
         return
