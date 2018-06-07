@@ -5,8 +5,10 @@ import hyppar
 
 # Weights  and biases of 3 convlayers and on FC layer,
 # to be saved during training
-w=[]
-b=[]
+wcl=[]
+bcl=[]
+wfc=[]
+bfc=[]
 
 
 # Activations of the convlayers, to be saved during training
@@ -25,8 +27,10 @@ def saveAll():
     
     
 def writeParameters(dir="Statistics"):
-    global w
-    global b
+    global wcl
+    global bcl
+    global wfc
+    global bfc
 
     # Use: hyppar module
     Nl           = hyppar.NCL
@@ -44,8 +48,8 @@ def writeParameters(dir="Statistics"):
         wim = np.zeros((Niter,Nc[i+1],Nc[i],filter[i][0],filter[i][1]))
         bim = np.zeros((Niter,Nc[i+1]))
         for j in range(Niter):
-            wim[i,:,:,:,:] = w[j][i]
-            bim[i,:]       = b[j][i]
+            wim[i,:,:,:,:] = wcl[j][i]
+            bim[i,:]       = bcl[j][i]
         np.save(hyppar.current_dir+'/'+dir+'/weights_convlayer_'+str(i),wim)
         np.save(hyppar.current_dir+'/'+dir+'/biases_convlayer_'+str(i),bim)
 
@@ -59,22 +63,22 @@ def writeParameters(dir="Statistics"):
         num_in = image_spec_x[0]*image_spec_y[0]
 
 
-    ind=0
-    num_out = fc_out[ind] 
-    for i in range(Nl,Nl+NFC):
 
-        wfc=np.zeros((Niter,num_in,num_out))
+    for i in range(NFC):
+        num_out=fc_out[i]
+        
+        wim=np.zeros((Niter,num_in,num_out))
         for j in range(Niter):
-            wfc[j,:,:]=w[j][i]
-        bfc=np.zeros((Niter,num_out))
+            wim[j,:,:]=wfc[j][i]
+        bim=np.zeros((Niter,num_out))
         for j in range(Niter):
-            bfc[j,:]=b[j][i]
-        np.save(hyppar.current_dir+'/'+dir+'/weights_fclayer'+str(ind),wfc)
-        np.save(hyppar.current_dir+'/'+dir+'/biases_fclayer'+str(ind),bfc)
-        ind=ind+1
+            bim[j,:]=b[j][i]
+        np.save(hyppar.current_dir+'/'+dir+'/weights_fclayer'+str(ind),wim)
+        np.save(hyppar.current_dir+'/'+dir+'/biases_fclayer'+str(ind),bim)
+
         num_in=num_out
         
-        num_out=fc_out[ind]
+
 
 def writeActivations(dir="Statistics"):
     global conv_out
@@ -176,20 +180,36 @@ def savefcActivations(activations):
 def saveParameters(params):
     ''' 
     Takes a snapshot of all of the current weights and biases
+    Input : An array of length 2 x (NCL+NFC) including convlayer
+            and fclayer weights and biases.
+    Saves cl and fc weights and biases into arrays with number of 
+    elements corresponding to the number of cl or fc layers. These 
+    are then saved to global arrays as snapshots.
     '''
-    global w 
-    global b
+    global wfc
+    global bfc
+    global wcl
+    global bcl
 
 
-    snapw = []
-    snapb = []
-    for i in range(len(params)):
+    snapwcl = []
+    snapbcl = []
+    snapwfc = []
+    snapbfc = []
+    for i in range(hyppar.NCL):
         if (i%2==0):
-            snapw.append(params[i].get_value())
+            snapwcl.append(params[i].get_value())
         else:
-            snapb.append(params[i].get_value())
-
-    w.append(snapw)
-    b.append(snapb)
+            snapbcl.append(params[i].get_value())
+    for i in range(hyppar.NCL,hyppar.NCL+hyppar.NFC):
+        if (i%2==0):
+            snapwfc.append(params[i].get_value())
+        else:
+            snapbfc.append(params[i].get_value())
+            
+    wcl.append(snapwcl)
+    bcl.append(snapbcl)
+    wfc.append(snapwfc)
+    bfc.append(snapbfc)
 
     
