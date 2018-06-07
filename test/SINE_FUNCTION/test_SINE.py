@@ -12,7 +12,6 @@ import theano.tensor as T
 import load_data
 import random as rd
 import train_regression
-import train_classification
 import hyppar
 import datapar
 hyppar.current_dir=orig_path
