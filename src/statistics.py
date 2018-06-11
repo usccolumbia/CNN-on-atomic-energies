@@ -19,31 +19,39 @@ def saveAll():
     '''
     Writes everything there is to output file.
     '''
-    global w
-    
-    if(len(w)>1):writeParameters()
-    if(hyppar.NCL>0):writeActivations()
-    if(hyppar.NFC>0):writefcActivations()
-    
-    
-def writeParameters(dir="Statistics"):
-    global wcl
-    global bcl
     global wfc
     global bfc
+    global wcl
+    global bcl
+
+    writecl=len(wcl)>1 # Plot convlayer parameters
+    writefc=len(wfc)>1 # Plot fclayer parameters
+    
+    if (writecl) : writeClParameters()
+    if (writefc) : writeFcParameters()
+    #if(hyppar.NFC>0):writefcActivations()
+    
+def writeClParameters(dir="Statistics"):
+    '''
+    - Writes convolutional layer parameters into npy-files.
+    - Every simulation containing CL layers includes at least
+      parameters from two iterations: the initial weights, and weights
+      after first gradient jump.
+    - Writes all layers and corresponding biases and weights in their own files. 
+    '''
+    global wcl
+    global bcl
 
     # Use: hyppar module
     Nl           = hyppar.NCL
-    NFC          = hyppar.NFC
     Nc           = hyppar.Nchannel
     filter       = hyppar.filter
     image_spec_x = hyppar.image_spec_x
     image_spec_y = hyppar.image_spec_y
-    fc_out       = hyppar.fc_out
-    
-    # Derived variables
-    Niter   = len(w)
-    
+
+    # Number of saved snapshots
+    Niter = len(wcl)
+
     for i in range(Nl):
         wim = np.zeros((Niter,Nc[i+1],Nc[i],filter[i][0],filter[i][1]))
         bim = np.zeros((Niter,Nc[i+1]))
@@ -52,11 +60,26 @@ def writeParameters(dir="Statistics"):
             bim[i,:]       = bcl[j][i]
         np.save(hyppar.current_dir+'/'+dir+'/weights_convlayer_'+str(i),wim)
         np.save(hyppar.current_dir+'/'+dir+'/biases_convlayer_'+str(i),bim)
+    
+    
+def writeFcParameters(dir="Statistics"):
+    '''
+    Just as writeClParameters, but for FC layers.
+    '''
+    global wfc
+    global bfc
 
-
-    if (NFC==0):
-        return
-
+    # Use: hyppar module
+    NFC          = hyppar.NFC
+    Nl           = hyppar.NCL
+    Nc           = hyppar.Nchannel
+    image_spec_x = hyppar.image_spec_x
+    image_spec_y = hyppar.image_spec_y
+    fc_out       = hyppar.fc_out
+    
+    # Derived variables
+    Niter   = len(wfc)
+    
     if(Nl>0):
         num_in = Nc[NCL]*image_spec_x[-1]*image_spec_y[-1]
     else:
@@ -180,11 +203,17 @@ def savefcActivations(activations):
 def saveParameters(params):
     ''' 
     Takes a snapshot of all of the current weights and biases
-    Input : An array of length 2 x (NCL+NFC) including convlayer
+    
+    Input  : An array of length 2 x (NCL+NFC) including convlayer
             and fclayer weights and biases.
-    Saves cl and fc weights and biases into arrays with number of 
-    elements corresponding to the number of cl or fc layers. These 
-    are then saved to global arrays as snapshots.
+    Output  
+    - snapwcl : an array of shape NCL x [hyppar.filter]. (Array of NCL filters)
+    - snapbcl : Array with NCL elements, which are arrays of length Nchannels.
+    - snapwfc : an array of shape NFC x [fc_out[i-1] x fc_out[i]].
+    - snapbfc : array of NFC elements, which are arrays of lenght fc_out[i].
+    
+    These snapshots are added to the end of the global arrays called below.
+    
     '''
     global wfc
     global bfc
