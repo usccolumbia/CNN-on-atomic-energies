@@ -81,7 +81,7 @@ def writeFcParameters(dir="Statistics"):
     Niter   = len(wfc)
     
     if(Nl>0):
-        num_in = Nc[NCL]*image_spec_x[-1]*image_spec_y[-1]
+        num_in = Nc[Nl]*image_spec_x[-1]*image_spec_y[-1]
     else:
         num_in = image_spec_x[0]*image_spec_y[0]
 
@@ -95,9 +95,9 @@ def writeFcParameters(dir="Statistics"):
             wim[j,:,:]=wfc[j][i]
         bim=np.zeros((Niter,num_out))
         for j in range(Niter):
-            bim[j,:]=b[j][i]
-        np.save(hyppar.current_dir+'/'+dir+'/weights_fclayer'+str(ind),wim)
-        np.save(hyppar.current_dir+'/'+dir+'/biases_fclayer'+str(ind),bim)
+            bim[j,:]=bfc[j][i]
+        np.save(hyppar.current_dir+'/'+dir+'/weights_fclayer'+str(i),wim)
+        np.save(hyppar.current_dir+'/'+dir+'/biases_fclayer'+str(i),bim)
 
         num_in=num_out
         
@@ -225,16 +225,15 @@ def saveParameters(params):
     snapbcl = []
     snapwfc = []
     snapbfc = []
-    for i in range(hyppar.NCL):
-        if (i%2==0):
-            snapwcl.append(params[i].get_value())
-        else:
-            snapbcl.append(params[i].get_value())
-    for i in range(hyppar.NCL,hyppar.NCL+hyppar.NFC):
-        if (i%2==0):
-            snapwfc.append(params[i].get_value())
-        else:
-            snapbfc.append(params[i].get_value())
+
+    for layer in range(hyppar.NCL): # ConvLayers
+        i= 2*layer
+        snapwcl.append(params[i].get_value())
+        snapbcl.append(params[i+1].get_value())
+    for layer in range(hyppar.NCL,hyppar.NCL+hyppar.NFC): # FClayers
+        i=2*layer
+        snapwfc.append(params[i].get_value())
+        snapbfc.append(params[i+1].get_value())
             
     wcl.append(snapwcl)
     bcl.append(snapbcl)
