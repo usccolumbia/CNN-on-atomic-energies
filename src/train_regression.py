@@ -333,7 +333,7 @@ def TrainCNN():
                 # Save validation error
                 valid_error.append(valid_score)
             
-            if(iter%100==0):print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_pred_score))
+            if(iter%1==0):print("Iteration: "+str(iter+1)+"/"+str(num_epochs*n_train_batches)+", training cost: "+str(cost_ij)+", validation cost: "+str(valid_pred_score))
                             
             if (iter%hyppar.accumulate_predictions==0):
                 # Get predicted labels from validation set

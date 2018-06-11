@@ -29,7 +29,8 @@ def saveAll():
     
     if (writecl) : writeClParameters()
     if (writefc) : writeFcParameters()
-    #if(hyppar.NFC>0):writefcActivations()
+    if(hyppar.NFC>0):writefcActivations()
+    if(hyppar.NCL>0):writeActivations()
     
 def writeClParameters(dir="Statistics"):
     '''
